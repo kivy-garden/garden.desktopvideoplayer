@@ -16,23 +16,40 @@ _path = os.path.dirname(os.path.realpath(__file__))
 
 class DesktopVideoPlayer(RelativeLayout):
 
-    video = kp.ObjectProperty(None)
+    _video = kp.ObjectProperty(None)
     remaining_label = kp.ObjectProperty(None)
     play_btn = kp.ObjectProperty(None)
+    bottom_layout = kp.ObjectProperty(None)
     mouse_hover = kp.BooleanProperty(False)
     # path = kp.StringProperty(_path)
-    current_play_btn_image = kp.StringProperty(None)
+    current_play_btn_image = kp.StringProperty('atlas://data/images/defaulttheme/button')
     current_play_btn_down_image = kp.StringProperty(None)
+
+
+    # state = kp.OptionProperty('stop', options=('play', 'pause', 'stop'))
+
+    source = kp.StringProperty('')
+
+    auto_play = kp.BooleanProperty(True)
 
     # last_file_selected = StringProperty('')
 
     def __init__(self, **kwargs):
         super(DesktopVideoPlayer, self).__init__(**kwargs)
 
-        self.video_pause_position = 0.0
+        self.current_play_btn_image = self._get_play_image()
+
+
+        # self.video.bind(duration=self.setter('duration'),
+        #                 position=self.setter('position'),
+        #                 volume=self.setter('volume'),
+        #                 source=self.setter('source'),
+        #                 state=self.setter('state'))
+
+
+        # self.video_pause_position = 0.0
         # self.video = self.ids.wg_video
 
-        self.current_play_btn_image = self._get_play_image()
 
         # self.bind(current_play_btn_image=)
 
@@ -57,13 +74,13 @@ class DesktopVideoPlayer(RelativeLayout):
     #     self._popup.dismiss()
 
 
-    def load(self, filename):
+    # def load(self, filename):
         # print(path)
         # print(filename)
         # filename = filename[0]
         # self.video_orig_parent.add_widget(self.video)
 
-        self.video.source = filename
+        # self._video.source = filename
         # self.video.state = 'play'
 
         # if self.runtime_config:
@@ -73,20 +90,21 @@ class DesktopVideoPlayer(RelativeLayout):
 
     def loaded(self):
         # print(self.video.duration)
-        if self.video.duration != -1:
-            Logger.info('Loaded %s, duration %d', self.video.source, self.video.duration)
-            self.video.seek(0)
-            self.video.state = 'play'
-            self.ids.progress_bar.max = self.video.duration
+        if self._video.duration != -1:
+            Logger.info('Loaded %s, duration %d', self._video.source, self._video.duration)
+            self._video.seek(0)
+            self.ids.progress_bar.max = self._video.duration
         # if self.video.state == 'play':
-            self.video.y = 0
+            self._video.y = 0
+            if self.auto_play:
+                self._video.state = 'play'
             # self.current_play_btn_image = self._get_play_image()
             # self.play_btn.dispatch('background_normal')
 
 
     def update_progress(self, val):
         # d = self.video.duration * val
-        self.remaining_label.text = self.sec_to_time_str(val, force_hours=self.video.duration > 3600)
+        self.remaining_label.text = self.sec_to_time_str(val, force_hours=self._video.duration > 3600)
 
         self.ids.progress_bar.value = val
 
@@ -97,49 +115,51 @@ class DesktopVideoPlayer(RelativeLayout):
 
         return '%02d:%02d:%02d' % (hours, minutes, seconds) if force_hours or hours > 0 else '%02d:%02d' % (minutes, seconds)
 
+    # def on_state(self, obj, value):
+    #     self.video.state = value
+
     # def default_dir(self):
     #     def_dir = self.runtime_config.get('recent_dir')
     #     return def_dir if def_dir else os.path.expanduser("~")
 
     def seek(self, instance, pos):
-        self.video.seek = pos
+        self._video.seek = pos
 
     def toggle_video(self):
-        if self.video.state == 'play':
-            self.video_pause_position = self.video.position
-            self.video.state = 'pause'
+        if self._video.state == 'play':
+            # self.video_pause_position = self.video.position
+            self._video.state = 'pause'
         else:
-            self.video.position = self.video_pause_position
-            self.video.state = 'play'
+            # self.video.position = self.video_pause_position
+            self._video.state = 'play'
 
 
     def video_state_changed(self):
-        print(self.video.position)
+        # print(self._video.position)
+        print(self._video.state)
         self.current_play_btn_image = self._get_play_image()
         # self.video.position = self.video_pause_position
         # self.video.position = self.video_pause_position
 
     def check_mouse_hover(self, dt):
-
         p = Window.mouse_pos
-        if self.collide_point(p[0], p[1]) and p[0] > 1 and p[1] > 1 and Window.width:
-            # self.ids.top_layout.opacity = 1
-            # self.dispatch('on_mouse_over')
-            self.ids.bottom_layout.opacity = 1
+        # print(p, self.x, self.y, self.right, self.top)
+        if (self.x < p[0] - 1 and p[0] + 1 < self.right) and (self.y < p[1] - 2 and p[1] < self.top):
+            self.bottom_layout.opacity = 1
             self.mouse_hover = True
         else:
-            # self.dispatch('on_mouse_out')
-            # self.ids.top_layout.opacity = 0
-            self.ids.bottom_layout.opacity = 0
+            self.bottom_layout.opacity = 0
             self.mouse_hover = False
 
     def toggle_remaining_time(self, label_obj):
         print(label_obj.texture_size)
         pass
 
+    def on_source(self, obj, value):
+        self._video.source = value
 
     def _get_play_image(self):
-        return _path + ("/imgs/play.png" if self.video is None or (self.video and self.video.state == 'pause') else "/imgs/pause.png")
+        return _path + ("/imgs/play.png" if self._video is None or (self._video and (self._video.state == 'pause' or self._video.state == 'stop')) else "/imgs/pause.png")
 
 
     # def on_mouse_over(self):

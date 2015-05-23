@@ -1,91 +1,59 @@
 <DesktopVideoPlayer>:
-#    canvas.before:
-#        Color:
-#            rgb: 0, 1, 0
-#        Rectangle:
-#            pos: self.pos
-#            size: self.size
     _video: video
     play_btn: play_btn
     remaining_label: remaining_label
     bottom_layout: bottom_layout
 
-
     Video:
-#        on_parent: root.init()
         id: video
         on_duration: root.loaded()
-#        size_hint: None, None
-#        size: root.width, root.height
         allow_stretch: True
-#        on_loaded: root.show_video()
         on_position: root.update_progress(video.position)
         on_state: root.video_state_changed()
         y: -1000
-#    AnchorLayout:
-#        id: top_layout
-#        anchor_y: 'top'
-#        anchor_x: 'left'
-#        padding: 5
-#        Button:
-#            text: 'B1'
-#            size_hint: None, None
-#            size: 40, 40
-#            on_release: root.open_file_chooser()
+        on_touch_down: self.collide_point(*args[1].pos) and root.toggle_video()
+
     AnchorLayout:
         id: bottom_layout
         anchor_y: 'bottom'
         size_hint: 1, None
-        height: 50
+        height: 70
         StackLayout:
             spacing: 10, 0
-#            canvas.before:
-#                Color:
-#                    rgb: 0, 1, 0
-#                Rectangle:
-#                    pos: self.pos
-#                    size: self.size
+            padding: 10, 10, 10, 10
+#            background_color: [1, 0, 1, 0.5]
+            canvas.before:
+                Color:
+                    rgba: 0, 0, 0, 0.5
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
             Button:
                 id: play_btn
-#                on_press:
-                size_hint: None, 1
-                width: bottom_layout.height
-#                background_color: 0, 0, 0, 0
+                size_hint: None, None
+                size: 50, 50
                 background_normal: root.current_play_btn_image
                 background_down: root.current_play_btn_image
                 on_state: self.opacity = (0.6 if self.state == 'down' else 1.0)
                 on_release: root.toggle_video()
-#                Image:
-#                    source: root.path + "/imgs/play.png"
-#                    size: self.parent.size
-#                    position: self.parent.position
             VideoPlayerProgressBar:
                 pos_hint: None, None
                 id: progress_bar
                 video: video
                 size_hint: None, None
-                width: root.width - play_btn.width - sound_btn.width - remaining_label.width - 30
-                height: bottom_layout.height
+                width: root.width - play_btn.width - sound_btn.width - remaining_label.width - 50
+                height: 50
             Button:
                 id: remaining_label
                 on_release: root.toggle_remaining_time(args[0])
                 text: "test"
                 size_hint: None, None
-#                size: self.texture_size
-                size: self.texture_size[0], bottom_layout.height
+                size: self.texture_size[0], 50
                 background_color: [1, 1, 1, 0]
                 text: "00:00"
-#                canvas.before:
-#                    Color:
-#                        rgb: 0, 1, 0
-#                    Rectangle:
-#                        pos: self.pos
-#                        size: self.size
             Button:
-                text: 'S'
                 id: sound_btn
-                size_hint: None, 1
-                width: bottom_layout.height
-#    Button:
-#        text: 'B1'
-#        size_hint: 1,1
+                background_normal: root.current_volume_btn_image
+                background_down: root.current_volume_btn_image
+                size_hint: None, None
+                size: 50, 50

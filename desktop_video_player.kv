@@ -57,3 +57,15 @@
                 background_down: root.current_volume_btn_image
                 size_hint: None, None
                 size: 50, 50
+                Slider:
+                    id: volume_slider
+                    pos_hint: None, None
+                    pos: self.parent.pos[0], self.parent.pos[1] + self.parent.height
+                    size_hint: 1, None
+                    size: 50, 100
+                    orientation: 'vertical'
+                    range: 0, 100
+                    value: 100
+                    on_value: root._video.volume = self.value_normalized
+
+#                    height: 100

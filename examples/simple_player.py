@@ -13,11 +13,12 @@ from kivy.garden.desktopvideoplayer import DesktopVideoPlayer
 
 kv = """
 DesktopVideoPlayer:
-    source: "Construct GTC Teaser Trailer _ Photo-realistic 3D Animated Short Film by Kevin Margo-8JItUtHwKiE.mp4"
+    source: "hq_video.mp4"
 """
 
 class SimplePlayerApp(App):
     def build(self):
+        self.title = 'DesktopVideoPlayer'
         return Builder.load_string(kv)
 
 

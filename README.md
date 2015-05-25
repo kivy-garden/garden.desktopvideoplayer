@@ -15,6 +15,7 @@ Alternative video player designed to work well with desktop applications.
 - (planned) Detailed information about the video
 - (planned) Precise jump to location set by hh:mm:ss.frame
 - (planned) Bubble showing when hovering over the progress bar
+- (planned) Simple playlist functionality
 
 ## Installation
 
@@ -52,3 +53,9 @@ class SimplePlayerApp(App):
 if __name__ == '__main__':
     SimplePlayerApp().run()
 ```
+
+# License
+
+DesktopVideoPlayer is licensed under MIT license.
+
+Icons used in this player are based on [http://www.freebiesgallery.com/video-player-psd/](http://www.freebiesgallery.com/video-player-psd/).

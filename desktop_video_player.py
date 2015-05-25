@@ -47,7 +47,7 @@ class DesktopVideoPlayer(RelativeLayout):
         super(DesktopVideoPlayer, self).__init__(**kwargs)
 
         self._update_play_btn_image()
-        self.current_volume_btn_image = self._get_volume_image()
+        self._update_volume_btn_image()
 
 
         Clock.schedule_interval(partial(self.check_mouse_hover), 0.1)
@@ -103,15 +103,19 @@ class DesktopVideoPlayer(RelativeLayout):
         self._update_play_btn_image()
 
     def check_mouse_hover(self, dt):
-        p = Window.mouse_pos
+        p = self._mouse_pos_to_widget_relative(Window.mouse_pos)
+        # print(p, self.x, self.right, self.y, self.top)
         # print(p, self.x, self.y, self.right, self.top)
-        if (self.x < p[0] - 1 and p[0] + 1 < self.right) and (self.y < p[1] - 2 and p[1] < self.top):
+        if (0 < p[0] - 1 and p[0] + 1 < self.width) and (0 < p[1] - 2 and p[1] < self.height):
             self.bottom_layout.opacity = 1
             self.mouse_hover = True
         else:
             self.bottom_layout.opacity = 0
             self.mouse_hover = False
 
+        # print(self.pos, self._volume_btn.pos)
+        # @todo: This is weird, mouse position and widget position aren't relative to this widget
+        # if self._volume_btn.x <= p[0] - self.pos[0] <= self._volume_btn.right and self._volume_btn.y <= p[1] - self.pos[1] <= self._volume_btn.top:
         if self._volume_btn.collide_point(*p):
             self._volume_slider.opacity = 1
         elif not self._volume_btn.collide_point(*p) and not self._volume_slider.collide_point(*p):
@@ -128,9 +132,12 @@ class DesktopVideoPlayer(RelativeLayout):
         return os.path.join(_path, ("imgs/play.png" if self._video is None or (self._video and (self._video.state == 'pause' or self._video.state == 'stop')) else "imgs/pause.png"))
 
     def _get_volume_image(self):
+        if not self._video:
+            return os.path.join(_path, "imgs/volume_on.png")
+
         if self._video.volume == 0.0:
             return os.path.join(_path, "imgs/volume_off.png")
-        elif self._volume_slider.value_normalized > 0.5:
+        if self._volume_slider.value_normalized > 0.5:
             return os.path.join(_path, "imgs/volume_on.png")
         else:
             return os.path.join(_path, "imgs/volume_on_50.png")
@@ -157,6 +164,9 @@ class DesktopVideoPlayer(RelativeLayout):
     def volume(self, value):
         self._video.volume = value
         self._update_volume_btn_image()
+
+    def _mouse_pos_to_widget_relative(self, pos):
+        return pos[0] - self.pos[0], pos[1] - self.pos[1]
 
     # def on_mouse_over(self):
     #     print(".dispatch('on_mouse_over')")

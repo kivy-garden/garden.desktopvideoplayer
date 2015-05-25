@@ -3,6 +3,8 @@
     play_btn: play_btn
     remaining_label: remaining_label
     bottom_layout: bottom_layout
+    _volume_slider: volume_slider
+    _volume_btn: volume_btn
 
     Video:
         id: video
@@ -41,7 +43,7 @@
                 id: progress_bar
                 video: video
                 size_hint: None, None
-                width: root.width - play_btn.width - sound_btn.width - remaining_label.width - 50
+                width: root.width - play_btn.width - volume_btn.width - remaining_label.width - 50
                 height: 50
             Button:
                 id: remaining_label
@@ -52,9 +54,10 @@
                 background_color: [1, 1, 1, 0]
                 text: "00:00"
             Button:
-                id: sound_btn
+                id: volume_btn
                 background_normal: root.current_volume_btn_image
                 background_down: root.current_volume_btn_image
+                on_release: root.toggle_muted()
                 size_hint: None, None
                 size: 50, 50
                 Slider:
@@ -66,6 +69,7 @@
                     orientation: 'vertical'
                     range: 0, 100
                     value: 100
-                    on_value: root._video.volume = self.value_normalized
+                    opacity: 0
+                    on_value: root.volume = self.value_normalized
 
 #                    height: 100

@@ -1,6 +1,11 @@
 import kivy
 from kivy.app import App
 from kivy.lang import Builder
+from kivy.config import Config
+
+Config.set('graphics', 'width', 800)
+Config.set('graphics','height', 400)
+
 kivy.require('1.9.0')
 
 from kivy.garden.desktopvideoplayer import DesktopVideoPlayer
@@ -8,7 +13,7 @@ from kivy.garden.desktopvideoplayer import DesktopVideoPlayer
 
 kv = """
 DesktopVideoPlayer:
-    source: "DOOM - E3 Teaser Trailer-f3UpX1CMEMQ.mp4"
+    source: "Construct GTC Teaser Trailer _ Photo-realistic 3D Animated Short Film by Kevin Margo-8JItUtHwKiE.mp4"
 """
 
 class SimplePlayerApp(App):

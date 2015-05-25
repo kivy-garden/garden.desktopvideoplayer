@@ -10,7 +10,11 @@ Alternative video player designed to work well with desktop applications.
 - Controls (including volume) show on mouse hover
 - Togglable time label with elapsed/remaining times
 - Play/pause on mouse click
-- (planned) 
+- (planned) Context menu on right mouse click
+- (planned) `ffmpeg` integration to capture screenshots
+- (planned) Detailed information about the video
+- (planned) Precise jump to location set by hh:mm:ss.frame
+- (planned) Bubble showing when hovering over the progress bar
 
 ## Installation
 
@@ -20,23 +24,21 @@ Install from [Kivy garden](http://kivy-garden.github.io/) with:
 
 ## Demo
 
-Package contains minimal demo project. You can run it from installed kivy package directory:
+Package contains minimal demo project. You can run it from your installed kivy package directory:
 
     kivy examples/simple_player.py 
     
 ## Usage
 
-DesktopVideoPlayer behaves just like the default video player (work in progress right now).
+DesktopVideoPlayer behaves just like the default video player (work in progress).
 
 ```python
 import kivy
 from kivy.app import App
 from kivy.lang import Builder
-
 kivy.require('1.9.0')
 
 from kivy.garden.desktopvideoplayer import DesktopVideoPlayer
-
 
 kv = """
 DesktopVideoPlayer:

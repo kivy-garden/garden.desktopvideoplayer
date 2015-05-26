@@ -49,8 +49,8 @@ class DesktopVideoPlayer(RelativeLayout):
         self._update_play_btn_image()
         self._update_volume_btn_image()
 
-
         Clock.schedule_interval(partial(self.check_mouse_hover), 0.1)
+        Window.bind(on_key_down=self.on_key_down)
 
         # self.video.bind(duration=self.setter('duration'),
         #                 position=self.setter('position'),
@@ -127,6 +127,11 @@ class DesktopVideoPlayer(RelativeLayout):
 
     def on_source(self, obj, value):
         self._video.source = value.encode('utf8')
+
+    def on_key_down(self, *args):
+        keycode = args[1]
+        if keycode == 32:
+            self.toggle_video()
 
     def _get_play_image(self):
         return os.path.join(_path, ("imgs/play.png" if self._video is None or (self._video and (self._video.state == 'pause' or self._video.state == 'stop')) else "imgs/pause.png"))

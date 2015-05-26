@@ -6,10 +6,10 @@ Alternative video player designed to work well with desktop applications.
 
 ## Features
 
-- Supports all formats as the default [uix.video](http://kivy.org/docs/api-kivy.uix.video.html) component
+- Based on the default [uix.video](http://kivy.org/docs/api-kivy.uix.video.html) component
 - Controls (including volume) show on mouse hover
 - Togglable time label with elapsed/remaining times
-- Play/pause on mouse click
+- Play/pause on mouse click or space bar pressed
 - (planned) Context menu on right mouse click
 - (planned) `ffmpeg` integration to capture screenshots
 - (planned) Detailed information about the video

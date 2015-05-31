@@ -18,6 +18,7 @@ DesktopVideoPlayer:
 
 class SimplePlayerApp(App):
     def build(self):
+        Config.set('input','mouse', 'mouse,disable_multitouch')
         self.title = 'DesktopVideoPlayer'
         return Builder.load_string(kv)
 

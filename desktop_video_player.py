@@ -1,5 +1,6 @@
 import kivy
 from kivy.uix.relativelayout import RelativeLayout
+from kivy.uix.relativelayout import FloatLayout
 from kivy.logger import Logger
 from kivy.uix.image import Image
 from kivy.core.window import Window
@@ -15,17 +16,17 @@ import os
 
 _path = os.path.dirname(os.path.realpath(__file__))
 
-class DesktopVideoPlayer(RelativeLayout):
+class DesktopVideoPlayer(FloatLayout):
 
     _video = kp.ObjectProperty(None)
     _volume_slider = kp.ObjectProperty(None)
-    volume_btn = kp.ObjectProperty(None)
+    _volume_btn = kp.ObjectProperty(None)
+    _context_menu = kp.ObjectProperty(None)
 
     remaining_label = kp.ObjectProperty(None)
     play_btn = kp.ObjectProperty(None)
     bottom_layout = kp.ObjectProperty(None)
 
-    mouse_hover = kp.BooleanProperty(False)
     # path = kp.StringProperty(_path)
     current_play_btn_image = kp.StringProperty('atlas://data/images/defaulttheme/button')
 
@@ -35,10 +36,9 @@ class DesktopVideoPlayer(RelativeLayout):
 
     source = kp.StringProperty('')
 
+    mouse_hover = kp.BooleanProperty(False)
     auto_play = kp.BooleanProperty(True)
-
     show_elapsed_time = kp.BooleanProperty(True)
-
     volume_muted = kp.BooleanProperty(False)
 
     # last_file_selected = StringProperty('')
@@ -50,7 +50,7 @@ class DesktopVideoPlayer(RelativeLayout):
         self._update_volume_btn_image()
 
         Clock.schedule_interval(partial(self.check_mouse_hover), 0.1)
-        Window.bind(on_key_down=self.on_key_down)
+        Window.bind(on_key_down=self._on_key_down)
 
         # self.video.bind(duration=self.setter('duration'),
         #                 position=self.setter('position'),
@@ -65,7 +65,7 @@ class DesktopVideoPlayer(RelativeLayout):
             # self._video.seek(0)
             self.ids.progress_bar.max = self._video.duration
             if self._video.duration != 1:
-                self._video.y = 0
+                self._video.opacity = 1.0
             if self.auto_play:
                 self._video.state = 'play'
 
@@ -118,8 +118,10 @@ class DesktopVideoPlayer(RelativeLayout):
         # if self._volume_btn.x <= p[0] - self.pos[0] <= self._volume_btn.right and self._volume_btn.y <= p[1] - self.pos[1] <= self._volume_btn.top:
         if self._volume_btn.collide_point(*p):
             self._volume_slider.opacity = 1
+            self._volume_slider.disabled = False
         elif not self._volume_btn.collide_point(*p) and not self._volume_slider.collide_point(*p):
             self._volume_slider.opacity = 0
+            self._volume_slider.disabled = True
 
     def toggle_remaining_time(self, label_obj):
         self.show_elapsed_time = False if self.show_elapsed_time else True
@@ -128,13 +130,41 @@ class DesktopVideoPlayer(RelativeLayout):
     def on_source(self, obj, value):
         self._video.source = value.encode('utf8')
 
-    def on_key_down(self, *args):
+    def _on_key_down(self, *args):
+        # super(DesktopVideoPlayer, self).__init__(**kwargs)
         keycode = args[1]
         if keycode == 32:
             self.toggle_video()
 
+    def _on_touch_down(self, obj, click_event):
+        # super(DesktopVideoPlayer, self).__init__(**kwargs)
+        if self._video.collide_point(*click_event.pos) and click_event.button == 'left':
+            if self._context_menu.disabled:
+                self.toggle_video()
+            else:
+                self._hide_context_menu()
+        elif click_event.button == 'right':
+            self._show_context_menu(*click_event.pos)
+
+    def _hide_context_menu(self):
+        self._context_menu.disabled = True
+        self._context_menu.opacity = 0.0
+
+    def _show_context_menu(self, x=None, y=None):
+        if x is not None and y is not None:
+            width = self._context_menu.width
+            height = self._context_menu.height
+            self._context_menu.pos = \
+                (x if x + width < self.width else x - width, y if y - height < 0 else y - height)
+
+        self._context_menu.disabled = False
+        self._context_menu.opacity = 1.0
+
     def _get_play_image(self):
-        return os.path.join(_path, ("imgs/play.png" if self._video is None or (self._video and (self._video.state == 'pause' or self._video.state == 'stop')) else "imgs/pause.png"))
+        if self._video is None or (self._video and (self._video.state == 'pause' or self._video.state == 'stop')):
+            return os.path.join(_path, "imgs/play.png")
+        else:
+            return os.path.join(_path, "imgs/pause.png")
 
     def _get_volume_image(self):
         if not self._video:

@@ -21,12 +21,6 @@
         on_touch_down: root._on_touch_down(*args)
 #        on_key_down: root.on_key_down(args[1])
 
-    ContextMenu:
-        id: context_menu
-#        pos: 200, 200
-        opacity: 0
-        disabled: True
-
     AnchorLayout:
         id: bottom_layout
         anchor_y: 'bottom'
@@ -76,7 +70,7 @@
                 Slider:
                     id: volume_slider
                     pos_hint: None, None
-                    pos: self.parent.pos[0], self.parent.pos[1] + self.parent.height
+                    pos: self.parent.pos[0], 0
                     size_hint: 1, None
                     size: 50, 100
                     orientation: 'vertical'
@@ -85,16 +79,30 @@
                     opacity: 0
                     on_value: root.volume = self.value_normalized
 
+    ContextMenu:
+        id: context_menu
+        opacity: 0
+        disabled: True
+
+
 <ContextMenu@GridLayout>:
     cols: 1
     size_hint: None, None
 #    pos_hint: None, None
-    row_force_default: True
-    row_default_height: 30
+#    row_force_default: True
+#    row_default_height: 30
     Button:
         text: "button #1"
+        size_hint_x: None
+        height: 30
     Button:
         text: "very long button #2"
-        text_size: self.size
+        size_hint_x: None
+#        text_size: self.width, None
+        width: self.texture_size[0]
+        on_width: self.parent.width = self.texture_size[0]
+        height: 30
     Button:
         text: "button #3"
+        size_hint_x: None
+        height: 30

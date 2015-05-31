@@ -119,9 +119,11 @@ class DesktopVideoPlayer(FloatLayout):
         if self._volume_btn.collide_point(*p):
             self._volume_slider.opacity = 1
             self._volume_slider.disabled = False
+            self._volume_slider.y = self._volume_slider.parent.pos[1] + self._volume_slider.parent.height
         elif not self._volume_btn.collide_point(*p) and not self._volume_slider.collide_point(*p):
             self._volume_slider.opacity = 0
             self._volume_slider.disabled = True
+            self._volume_slider.y = -1000
 
     def toggle_remaining_time(self, label_obj):
         self.show_elapsed_time = False if self.show_elapsed_time else True
@@ -149,6 +151,7 @@ class DesktopVideoPlayer(FloatLayout):
     def _hide_context_menu(self):
         self._context_menu.disabled = True
         self._context_menu.opacity = 0.0
+        self._context_menu.y = -1000
 
     def _show_context_menu(self, x=None, y=None):
         if x is not None and y is not None:

@@ -1,0 +1,33 @@
+<ContextMenu>:
+    cols: 1
+    opacity: 0
+    disabled: True
+    size_hint: None, None
+    spacing: 5, 5
+    canvas.before:
+        Color:
+            rgb: 0.6, 0.6, 0.6
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<ContextMenuItem>:
+    height: 40
+    size_hint_x: None
+#    pos_hint: None, None
+    padding_x: 5
+#    size: 100, 50
+    font_size: '14px'
+    width: self.texture_size[0]
+#    text_size: self.width, None
+#    text_size: self.size
+    halign: 'left'
+    valign: 'middle'
+#    on_text: self.parent.width = self.texture_size
+#    on_width: self.parent.width = self.texture_size[0]
+    canvas.before:
+        Color:
+            rgb: 0.2, 0.6, 0.6
+        Rectangle:
+            pos: self.pos
+            size: self.size

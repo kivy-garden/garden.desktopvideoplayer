@@ -18,7 +18,7 @@
         on_state: root.video_state_changed()
         opacity: 0
 #        on_touch_down: print(args)
-        on_touch_down: root._on_touch_down(*args)
+        on_touch_down: root._on_touch_down(args[1])
 #        on_key_down: root.on_key_down(args[1])
 
     AnchorLayout:
@@ -81,28 +81,3 @@
 
     ContextMenu:
         id: context_menu
-        opacity: 0
-        disabled: True
-
-
-<ContextMenu@GridLayout>:
-    cols: 1
-    size_hint: None, None
-#    pos_hint: None, None
-#    row_force_default: True
-#    row_default_height: 30
-    Button:
-        text: "button #1"
-        size_hint_x: None
-        height: 30
-    Button:
-        text: "very long button #2"
-        size_hint_x: None
-#        text_size: self.width, None
-        width: self.texture_size[0]
-        on_width: self.parent.width = self.texture_size[0]
-        height: 30
-    Button:
-        text: "button #3"
-        size_hint_x: None
-        height: 30

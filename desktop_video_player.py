@@ -9,6 +9,7 @@ from kivy.lang import Builder
 from kivy.factory import Factory
 from kivy.clock import Clock
 from functools import partial
+from context_menu import ContextMenuItem
 import kivy.properties as kp
 
 import os
@@ -29,10 +30,7 @@ class DesktopVideoPlayer(FloatLayout):
 
     # path = kp.StringProperty(_path)
     current_play_btn_image = kp.StringProperty('atlas://data/images/defaulttheme/button')
-
     current_volume_btn_image = kp.StringProperty('atlas://data/images/defaulttheme/button')
-
-    # state = kp.OptionProperty('stop', options=('play', 'pause', 'stop'))
 
     source = kp.StringProperty('')
 
@@ -52,12 +50,18 @@ class DesktopVideoPlayer(FloatLayout):
         Clock.schedule_interval(partial(self.check_mouse_hover), 0.1)
         Window.bind(on_key_down=self._on_key_down)
 
+        self._context_menu.add_item("test #1")
+        self._context_menu.add_item("test long text #2")
+        self._context_menu.add_item("test #3")
+
         # self.video.bind(duration=self.setter('duration'),
         #                 position=self.setter('position'),
         #                 volume=self.setter('volume'),
         #                 source=self.setter('source'),
         #                 state=self.setter('state'))
 
+    # def on_press(self):
+    #     print('aaa')
 
     def loaded(self):
         if self._video.duration != -1:
@@ -103,7 +107,9 @@ class DesktopVideoPlayer(FloatLayout):
         self._update_play_btn_image()
 
     def check_mouse_hover(self, dt):
-        p = self._mouse_pos_to_widget_relative(Window.mouse_pos)
+        p = self.to_local(*Window.mouse_pos)
+        # p = self._mouse_pos_to_widget_relative(Window.mouse_pos)
+
         # print(p, self.x, self.right, self.y, self.top)
         # print(p, self.x, self.y, self.right, self.top)
         if (0 < p[0] - 1 and p[0] + 1 < self.width) and (0 < p[1] - 2 and p[1] < self.height):
@@ -138,30 +144,18 @@ class DesktopVideoPlayer(FloatLayout):
         if keycode == 32:
             self.toggle_video()
 
-    def _on_touch_down(self, obj, click_event):
-        # super(DesktopVideoPlayer, self).__init__(**kwargs)
+    def _on_touch_down(self, click_event):
+        # super(DesktopVideoPlayer, self).on_touch_down(click_event)
+        # print(click_event)
         if self._video.collide_point(*click_event.pos) and click_event.button == 'left':
             if self._context_menu.disabled:
                 self.toggle_video()
             else:
-                self._hide_context_menu()
+                self._context_menu.hide()
         elif click_event.button == 'right':
-            self._show_context_menu(*click_event.pos)
+            self._context_menu.show(*click_event.pos)
+        # return True
 
-    def _hide_context_menu(self):
-        self._context_menu.disabled = True
-        self._context_menu.opacity = 0.0
-        self._context_menu.y = -1000
-
-    def _show_context_menu(self, x=None, y=None):
-        if x is not None and y is not None:
-            width = self._context_menu.width
-            height = self._context_menu.height
-            self._context_menu.pos = \
-                (x if x + width < self.width else x - width, y if y - height < 0 else y - height)
-
-        self._context_menu.disabled = False
-        self._context_menu.opacity = 1.0
 
     def _get_play_image(self):
         if self._video is None or (self._video and (self._video.state == 'pause' or self._video.state == 'stop')):

@@ -146,9 +146,9 @@ class DesktopVideoPlayer(FloatLayout):
         if keycode == 32:
             self.toggle_video()
 
-    def _on_touch_down(self, click_event):
+    def _on_touch_down(self, obj, click_event):
         # super(DesktopVideoPlayer, self).on_touch_down(click_event)
-        # print(click_event)
+        print(click_event)
         p = self._mouse_pos_to_widget_relative(click_event.pos)
         
         if self._video.collide_point(*p) and click_event.button == 'left':
@@ -158,6 +158,8 @@ class DesktopVideoPlayer(FloatLayout):
                 self._context_menu.hide()
         elif click_event.button == 'right':
             self._context_menu.show(*p)
+
+        # print(click_event.button)
         # return True
 
 

@@ -26,8 +26,10 @@ class ContextMenu(GridLayout):
         self.width = self.children[0].size[0]
 
         if x is not None and y is not None:
-            self.pos = \
-                (x if x + self.width < self.parent.width else x - self.width, y if y - self.height < 0 else y - self.height)
+            pox_x = x if x + self.width < self.parent.width else x - self.width
+            pos_y = y if y - self.height < 0 else y - self.height
+            parent_pos = self.parent.pos
+            self.pos = (pox_x + parent_pos[0], pos_y + parent_pos[1])
 
         self.disabled = False
         self.opacity = 1.0

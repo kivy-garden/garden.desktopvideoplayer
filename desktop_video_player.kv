@@ -7,8 +7,7 @@
     _volume_btn: volume_btn
     _context_menu: context_menu
 
-#    on_key_down: root._on_key_down(*args)
-#    on_touch_down: root._on_touch_down(*args)
+    on_parent: root._init()
 
     Video:
         id: video
@@ -26,6 +25,7 @@
         anchor_y: 'bottom'
         size_hint: 1, None
         height: 70
+        pos: root.pos
         StackLayout:
             spacing: 10, 0
             padding: 10, 10, 10, 10

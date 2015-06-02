@@ -50,16 +50,18 @@ class DesktopVideoPlayer(FloatLayout):
         Clock.schedule_interval(partial(self.check_mouse_hover), 0.1)
         Window.bind(on_key_down=self._on_key_down)
 
-        self._context_menu.add_item("test #1")
-        self._context_menu.add_item("test long text #2")
-        self._context_menu.add_item("test #3")
-
         # self.video.bind(duration=self.setter('duration'),
         #                 position=self.setter('position'),
         #                 volume=self.setter('volume'),
         #                 source=self.setter('source'),
         #                 state=self.setter('state'))
 
+    def _init(self, *args):
+        self._context_menu.add_item("test #1")
+        self._context_menu.add_item("test long text #2")
+        self._context_menu.add_item("test #3")
+
+        
     # def on_press(self):
     #     print('aaa')
 
@@ -107,9 +109,9 @@ class DesktopVideoPlayer(FloatLayout):
         self._update_play_btn_image()
 
     def check_mouse_hover(self, dt):
-        p = self.to_local(*Window.mouse_pos)
-        # p = self._mouse_pos_to_widget_relative(Window.mouse_pos)
-
+        # p = self.to_local(*Window.mouse_pos)
+        p = self._mouse_pos_to_widget_relative(Window.mouse_pos)
+        
         # print(p, self.x, self.right, self.y, self.top)
         # print(p, self.x, self.y, self.right, self.top)
         if (0 < p[0] - 1 and p[0] + 1 < self.width) and (0 < p[1] - 2 and p[1] < self.height):
@@ -147,13 +149,15 @@ class DesktopVideoPlayer(FloatLayout):
     def _on_touch_down(self, click_event):
         # super(DesktopVideoPlayer, self).on_touch_down(click_event)
         # print(click_event)
-        if self._video.collide_point(*click_event.pos) and click_event.button == 'left':
+        p = self._mouse_pos_to_widget_relative(click_event.pos)
+        
+        if self._video.collide_point(*p) and click_event.button == 'left':
             if self._context_menu.disabled:
                 self.toggle_video()
             else:
                 self._context_menu.hide()
         elif click_event.button == 'right':
-            self._context_menu.show(*click_event.pos)
+            self._context_menu.show(*p)
         # return True
 
 

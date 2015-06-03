@@ -5,27 +5,28 @@
     bottom_layout: bottom_layout
     _volume_slider: volume_slider
     _volume_btn: volume_btn
-    _context_menu: context_menu
+    context_menu: context_menu
 
-    on_parent: root._init()
+    on_parent: not self._initialized and root._init()
 
     Video:
         id: video
+        pos: root.pos
         on_duration: root.loaded()
         allow_stretch: True
         on_position: root.update_progress(video.position)
         on_state: root.video_state_changed()
         opacity: 0
-        on_touch_down: root.collide_point(*args[1].pos) and root._on_touch_down(*args)
+        on_touch_down: root._on_touch_down(*args)
 #        on_touch_down: root._on_touch_down(args[1])
 #        on_key_down: root.on_key_down(args[1])
 
     AnchorLayout:
         id: bottom_layout
         anchor_y: 'bottom'
+        pos: root.pos
         size_hint: 1, None
         height: 70
-        pos: root.pos
         StackLayout:
             spacing: 10, 0
             padding: 10, 10, 10, 10

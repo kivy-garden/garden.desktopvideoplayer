@@ -22,7 +22,7 @@ class DesktopVideoPlayer(FloatLayout):
     _video = kp.ObjectProperty(None)
     _volume_slider = kp.ObjectProperty(None)
     _volume_btn = kp.ObjectProperty(None)
-    _context_menu = kp.ObjectProperty(None)
+    context_menu = kp.ObjectProperty(None)
 
     remaining_label = kp.ObjectProperty(None)
     play_btn = kp.ObjectProperty(None)
@@ -38,11 +38,15 @@ class DesktopVideoPlayer(FloatLayout):
     auto_play = kp.BooleanProperty(True)
     show_elapsed_time = kp.BooleanProperty(True)
     volume_muted = kp.BooleanProperty(False)
+    _initialized = kp.BooleanProperty(False)
 
     # last_file_selected = StringProperty('')
 
     def __init__(self, **kwargs):
         super(DesktopVideoPlayer, self).__init__(**kwargs)
+
+        # self.register_event_type('on_context_menu_show')
+        # self.register_event_type('on_context_menu_hide')
 
         self._update_play_btn_image()
         self._update_volume_btn_image()
@@ -57,13 +61,10 @@ class DesktopVideoPlayer(FloatLayout):
         #                 state=self.setter('state'))
 
     def _init(self, *args):
-        self._context_menu.add_item("test #1")
-        self._context_menu.add_item("test long text #2")
-        self._context_menu.add_item("test #3")
-
-        
-    # def on_press(self):
-    #     print('aaa')
+        self.context_menu.add_item("test #1")
+        self.context_menu.add_item("test long text #2")
+        self.context_menu.add_item("test #3")
+        self._initialized = True
 
     def loaded(self):
         if self._video.duration != -1:
@@ -98,6 +99,9 @@ class DesktopVideoPlayer(FloatLayout):
         self._video.seek = pos
 
     def toggle_video(self):
+        if self._video.duration == -1:
+            return
+
         if self._video.state == 'play':
             self._video.state = 'pause'
         else:
@@ -105,23 +109,18 @@ class DesktopVideoPlayer(FloatLayout):
 
 
     def video_state_changed(self):
-        # print(self._video.state)
         self._update_play_btn_image()
 
     def check_mouse_hover(self, dt):
-        # p = self.to_local(*Window.mouse_pos)
-        p = self._mouse_pos_to_widget_relative(Window.mouse_pos)
-        
-        # print(p, self.x, self.right, self.y, self.top)
-        # print(p, self.x, self.y, self.right, self.top)
-        if (0 < p[0] - 1 and p[0] + 1 < self.width) and (0 < p[1] - 2 and p[1] < self.height):
+        p = Window.mouse_pos
+
+        if (self.x < p[0] - 1 and p[0] + 1 < self.right) and (self.y < p[1] - 2 and p[1] < self.top):
             self.bottom_layout.opacity = 1
             self.mouse_hover = True
         else:
             self.bottom_layout.opacity = 0
             self.mouse_hover = False
 
-        # print(self.pos, self._volume_btn.pos)
         # @todo: This is weird, mouse position and widget position aren't relative to this widget
         # if self._volume_btn.x <= p[0] - self.pos[0] <= self._volume_btn.right and self._volume_btn.y <= p[1] - self.pos[1] <= self._volume_btn.top:
         if self._volume_btn.collide_point(*p):
@@ -131,14 +130,15 @@ class DesktopVideoPlayer(FloatLayout):
         elif not self._volume_btn.collide_point(*p) and not self._volume_slider.collide_point(*p):
             self._volume_slider.opacity = 0
             self._volume_slider.disabled = True
-            self._volume_slider.y = -1000
+            self._volume_slider.y = -100000
 
     def toggle_remaining_time(self, label_obj):
         self.show_elapsed_time = False if self.show_elapsed_time else True
         self._update_remaining_time()
 
     def on_source(self, obj, value):
-        self._video.source = value.encode('utf8')
+        Logger.info('Opening "%s"', value)
+        self._video.source = value
 
     def _on_key_down(self, *args):
         # super(DesktopVideoPlayer, self).__init__(**kwargs)
@@ -148,20 +148,18 @@ class DesktopVideoPlayer(FloatLayout):
 
     def _on_touch_down(self, obj, click_event):
         # super(DesktopVideoPlayer, self).on_touch_down(click_event)
-        print(click_event)
-        p = self._mouse_pos_to_widget_relative(click_event.pos)
-        
-        if self._video.collide_point(*p) and click_event.button == 'left':
-            if self._context_menu.disabled:
-                self.toggle_video()
-            else:
-                self._context_menu.hide()
-        elif click_event.button == 'right':
-            self._context_menu.show(*p)
+        if self.collide_point(*click_event.pos):
+            p = self._mouse_pos_to_widget_relative(click_event.pos)
 
-        # print(click_event.button)
-        # return True
-
+            if click_event.button == 'left':
+                if self.context_menu.visible:
+                    self.context_menu.visible = False
+                else:
+                    self.toggle_video()
+            elif click_event.button == 'right':
+                self.context_menu.show(*p)
+        else:
+            self.context_menu.visible = False
 
     def _get_play_image(self):
         if self._video is None or (self._video and (self._video.state == 'pause' or self._video.state == 'stop')):
@@ -232,5 +230,3 @@ class DesktopVideoPlayer(FloatLayout):
 #         self.bubble.y = self.top / 2 + 5
 
 Builder.load_file(os.path.join(_path, 'desktop_video_player.kv'))
-# Factory.register('DesktopVideoPlayer', cls=DesktopVideoPlayer)
-# Factory.register('CustomVideoPlayerProgressBar', cls=CustomVideoPlayerProgressBar)

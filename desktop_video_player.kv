@@ -82,3 +82,12 @@
 
     ContextMenu:
         id: context_menu
+        ContextMenuTextItem:
+            text: "Jump to"
+            on_release: root._context_item_release(args[0])
+        ContextMenuTextItem:
+            text: "Show info"
+        ContextMenuTextItem:
+            text: "Take screenshot"
+
+<JumpToInput>:

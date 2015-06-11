@@ -1,35 +1,42 @@
 <ContextMenu>:
     cols: 1
-    opacity: 0
-    disabled: True
     size_hint: None, None
-    spacing: 5, 5
-    row_default_height: 26
+    spacing: 0, 0
+    spacer: _spacer
+#    row_default_height: 26
+
 #    canvas.before:
 #        Color:
-#            rgb: 0.6, 0.6, 0.6
+#            rgb: 0.7, 0.2, 0.7
 #        Rectangle:
 #            pos: self.pos
 #            size: self.size
 
-<ContextMenuItem>:
-#    height: 100
-    size_hint_x: None
-#    pos_hint: None, None
-    padding_x: 5
-#    padding_y: 10
-#    size: 100, 50
+    Widget:
+        id: _spacer
+        size_hint: None, None
+        height: 3
+        canvas.before:
+            Color:
+                rgb: 0.2, 0.71, 0.90
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+<ContextMenuTextItem>:
+    padding: 10, 0
     font_size: '14px'
-#    width: self.texture_size[0]
-#    text_size: self.width, 30
     halign: 'left'
     valign: 'middle'
-#    on_width: print(self.width)
-#    on_width: self.text_size = self.parent._get_max_width(), self.height
-#    on_width: self.parent.width = self.texture_size[0]
+    size_hint: None, None
+    on_size: self.text_size = self.size
+    height: 26
+#    size: 0, 26
+
+<ContextMenuItem>:
     canvas.before:
         Color:
-            rgb: 0.2, 0.6, 0.6
+            rgb: (0.25, 0.25, 0.25) if self.hovered else (0.15, 0.15, 0.15)
         Rectangle:
             pos: self.pos
             size: self.size

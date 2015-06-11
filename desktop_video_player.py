@@ -3,6 +3,7 @@ from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.relativelayout import FloatLayout
 from kivy.logger import Logger
 from kivy.uix.image import Image
+from kivy.uix.widget import Widget
 from kivy.core.window import Window
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.lang import Builder
@@ -51,7 +52,7 @@ class DesktopVideoPlayer(FloatLayout):
         self._update_play_btn_image()
         self._update_volume_btn_image()
 
-        Clock.schedule_interval(partial(self.check_mouse_hover), 0.1)
+        Clock.schedule_interval(partial(self._check_mouse_hover), 0.1)
         Window.bind(on_key_down=self._on_key_down)
 
         # self.video.bind(duration=self.setter('duration'),
@@ -61,9 +62,10 @@ class DesktopVideoPlayer(FloatLayout):
         #                 state=self.setter('state'))
 
     def _init(self, *args):
-        self.context_menu.add_item("test #1")
-        self.context_menu.add_item("test long text #2")
-        self.context_menu.add_item("test #3")
+        self.context_menu.hide()
+        # self.context_menu.add_item("Jump to", on_release=self._context_item_release)
+        # self.context_menu.add_item("test long text #2", on_release=self._context_item_release)
+        # self.context_menu.add_item("test #3", on_release=self._context_item_release)
         self._initialized = True
 
     def loaded(self):
@@ -111,7 +113,7 @@ class DesktopVideoPlayer(FloatLayout):
     def video_state_changed(self):
         self._update_play_btn_image()
 
-    def check_mouse_hover(self, dt):
+    def _check_mouse_hover(self, dt):
         p = Window.mouse_pos
 
         if (self.x < p[0] - 1 and p[0] + 1 < self.right) and (self.y < p[1] - 2 and p[1] < self.top):
@@ -152,14 +154,14 @@ class DesktopVideoPlayer(FloatLayout):
             p = self._mouse_pos_to_widget_relative(click_event.pos)
 
             if click_event.button == 'left':
-                if self.context_menu.visible:
-                    self.context_menu.visible = False
-                else:
+                if self.context_menu.disabled:
                     self.toggle_video()
+                else:
+                    self.context_menu.hide()
             elif click_event.button == 'right':
                 self.context_menu.show(*p)
         else:
-            self.context_menu.visible = False
+            self.context_menu.hide()
 
     def _get_play_image(self):
         if self._video is None or (self._video and (self._video.state == 'pause' or self._video.state == 'stop')):
@@ -203,6 +205,10 @@ class DesktopVideoPlayer(FloatLayout):
 
     def _mouse_pos_to_widget_relative(self, pos):
         return pos[0] - self.pos[0], pos[1] - self.pos[1]
+
+    def _context_item_release(self, obj):
+        # pass
+        print(obj.text)
 
     # def on_mouse_over(self):
     #     print(".dispatch('on_mouse_over')")

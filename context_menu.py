@@ -25,8 +25,8 @@ class ContextMenu(GridLayout):
         self.add_widget(widget)
 
     def add_item(self, text, sub_menu=None, on_release=None):
-        if sub_menu:
-            text += ' ...'
+        # if sub_menu:
+        #     text += ' ...'
 
         item = ContextMenuTextItem(text)
         if on_release:
@@ -47,7 +47,7 @@ class ContextMenu(GridLayout):
         self.width = self._get_max_width()
         self.height = self._get_height()
 
-        print(self.width, self.height)
+        # print(self.width, self.height)
 
         if x is not None and y is not None:
             pox_x = x if x + self.width < self.parent.width else x - self.width
@@ -74,9 +74,8 @@ class ContextMenu(GridLayout):
 
     def _check_mouse_hover(self, obj):
         point = self.to_local(*Window.mouse_pos)
-        for widget in self.children:
-            if issubclass(widget.__class__, ContextMenuItem):
-                widget.hovered = bool(widget.collide_point(*point))
+        for widget in [w for w in self.children if issubclass(w.__class__, ContextMenuItem)]:
+            widget.hovered = bool(widget.collide_point(*point))
 
     def _get_height(self):
         height = 0
@@ -86,25 +85,33 @@ class ContextMenu(GridLayout):
 
     def _get_max_width(self):
         max_width = 0
-        for widget in self.children:
-            if issubclass(widget.__class__, ContextMenuItem):
-                width = widget.texture_size[0]
-                if width > max_width:
-                    max_width = width
+        for widget in [w for w in self.children if issubclass(w.__class__, ContextMenuItem)]:
+            width = widget.texture_size[0]
+            if width > max_width:
+                max_width = width
 
         return max_width
 
     def _resize_text_sizes(self):
         width = self._get_max_width()
-        for widget in self.children:
-            if issubclass(widget.__class__, ContextMenuItem):
-                widget.text_size = width, widget.height
-                widget.width = width
+        for widget in [w for w in self.children if issubclass(w.__class__, ContextMenuItem)]:
+            widget.text_size = width, widget.height
+            widget.width = width
 
 
 class ContextMenuItem:
     hovered = kp.BooleanProperty(False)
     # item_height = kp.NumericProperty(20)
+    submenu_postfix = kp.StringProperty(' ...')
+
+    def on_children(self, obj, new_text):
+        print(obj.text)
+        if self.text[-len(self.submenu_postfix):] != self.submenu_postfix and \
+                len([w for w in self.children if issubclass(w.__class__, ContextMenu)]) > 0:
+            # has sub menu
+            # print(self, self.text)
+            self.text += self.submenu_postfix
+
 
     def __init__(self, **kwargs):
         pass

@@ -154,7 +154,7 @@ class DesktopVideoPlayer(FloatLayout):
             p = self._mouse_pos_to_widget_relative(click_event.pos)
 
             if click_event.button == 'left':
-                if self.context_menu.disabled:
+                if not self.context_menu.visible:
                     self.toggle_video()
                 else:
                     self.context_menu.hide()
@@ -208,7 +208,7 @@ class DesktopVideoPlayer(FloatLayout):
 
     def _context_item_release(self, obj):
         # pass
-        print(obj.text)
+        print(obj)
 
     # def on_mouse_over(self):
     #     print(".dispatch('on_mouse_over')")

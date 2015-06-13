@@ -3,15 +3,15 @@
     size_hint: None, None
     spacing: 0, 0
     spacer: _spacer
+    on_parent: self.size = self.get_max_width(), self.get_height()
 #    row_default_height: 26
 
 #    canvas.before:
 #        Color:
-#            rgb: 0.7, 0.2, 0.7
+#            rgb: 1.0, 0, 0
 #        Rectangle:
 #            pos: self.pos
 #            size: self.size
-
     Widget:
         id: _spacer
         size_hint: None, None
@@ -24,14 +24,37 @@
                 size: self.size
 
 <ContextMenuTextItem>:
-    padding: 10, 0
-    font_size: '14px'
-    halign: 'left'
-    valign: 'middle'
+    label: _label
     size_hint: None, None
-    on_size: self.text_size = self.size
-    height: 26
-#    size: 0, 26
+    size: self.parent.width, 26
+    on_text: self.label.text = self.text
+#    on_text: self.label.text = self.text + (' ...' if self.get_submenu() else '')
+
+    Label:
+        pos: self.parent.pos
+        id: _label
+        padding: 10, 0
+        font_size: '14px'
+        halign: 'left'
+        valign: 'middle'
+        size: self.texture_size
+        size_hint: None, 1
+
+#        text_size: self.texture_size
+#        canvas.before:
+#            Color:
+#                rgb: 0.8, 0.71, 0.90
+#            Rectangle:
+#                pos: self.pos
+#                size: self.size
+#    Label:
+#        padding: 10, 0
+#        font_size: '14px'
+#        halign: 'left'
+#        valign: 'middle'
+#        text_size: self.texture_size
+#        text: "..."
+
 
 <ContextMenuItem>:
     canvas.before:

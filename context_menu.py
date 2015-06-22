@@ -72,7 +72,7 @@ class ContextMenu(GridLayout):
     def get_max_width(self):
         max_width = 0
         for widget in self.menu_item_widgets:
-            width = widget.label.texture_size[0]
+            width = widget.content_width
             if width > max_width:
                 max_width = width
 
@@ -120,6 +120,10 @@ class ContextMenuItem:
         if submenu:
             submenu.hide()
 
+    @property
+    def content_width(self):
+        raise Exception('You have to overload this method.')
+
 
 class ContextMenuTextItem(ButtonBehavior, FloatLayout, ContextMenuItem):
     submenu_postfix = kp.StringProperty(' ...')
@@ -132,6 +136,10 @@ class ContextMenuTextItem(ButtonBehavior, FloatLayout, ContextMenuItem):
 
     def on_release(self):
         self.parent.hide()
+
+    @property
+    def content_width(self):
+        return self.label.texture_size[0] + 10
 
     # def on_text(self, obj, new_text):
         # super(ContextMenuTextItem, self).on_text(*args)

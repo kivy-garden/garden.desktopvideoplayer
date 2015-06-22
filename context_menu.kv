@@ -4,7 +4,6 @@
     spacing: 0, 0
     spacer: _spacer
     on_parent: self.size = self.get_max_width(), self.get_height()
-#    row_default_height: 26
 
 #    canvas.before:
 #        Color:
@@ -40,26 +39,28 @@
         size: self.texture_size
         size_hint: None, 1
 
-#        text_size: self.texture_size
-#        canvas.before:
-#            Color:
-#                rgb: 0.8, 0.71, 0.90
-#            Rectangle:
-#                pos: self.pos
-#                size: self.size
-#    Label:
-#        padding: 10, 0
-#        font_size: '14px'
-#        halign: 'left'
-#        valign: 'middle'
-#        text_size: self.texture_size
-#        text: "..."
-
-
 <ContextMenuItem>:
+    pos: self.parent.pos
+    submenu_arrow: _submenu_arrow
     canvas.before:
         Color:
             rgb: (0.25, 0.25, 0.25) if self.hovered else (0.15, 0.15, 0.15)
         Rectangle:
             pos: self.pos
             size: self.size
+
+    Widget:
+        id: _submenu_arrow
+        size_hint: None, None
+        width: 6
+        height: 11
+        pos: self.parent.right - self.width - 5, self.parent.y + ((self.parent.height - self.height) / 2)
+        canvas.before:
+            Translate:
+                xy: self.pos
+            Color:
+                rgb: (1, 1, 1)
+            Triangle:
+                points: [0,0, self.width,self.height/2, 0,self.height]
+            Translate:
+                xy: (-self.pos[0], -self.pos[1])

@@ -12,11 +12,11 @@
     Video:
         id: video
         pos: root.pos
+        opacity: 0
         on_duration: root.loaded()
         allow_stretch: True
         on_position: root.update_progress(video.position)
         on_state: root.video_state_changed()
-        opacity: 0
         on_touch_down: root._on_touch_down(*args)
 #        on_touch_down: root._on_touch_down(args[1])
 #        on_key_down: root.on_key_down(args[1])

@@ -3,7 +3,8 @@
     size_hint: None, None
     spacing: 0, 0
     spacer: _spacer
-    on_parent: self.size = self.get_max_width(), self.get_height()
+    on_visible: self._on_visible(args[1])
+    on_parent: self._on_visible(self.visible)
 
 #    canvas.before:
 #        Color:
@@ -13,7 +14,7 @@
 #            size: self.size
     Widget:
         id: _spacer
-        size_hint: None, None
+        size_hint: 1, None
         height: 3
         canvas.before:
             Color:
@@ -22,26 +23,13 @@
                 pos: self.pos
                 size: self.size
 
-<ContextMenuTextItem>:
-    label: _label
-    size_hint: None, None
-    size: self.parent.width, 26
-    on_text: self.label.text = self.text
-#    on_text: self.label.text = self.text + (' ...' if self.get_submenu() else '')
-
-    Label:
-        pos: self.parent.pos
-        id: _label
-        padding: 10, 0
-        font_size: '14px'
-        halign: 'left'
-        valign: 'middle'
-        size: self.texture_size
-        size_hint: None, 1
-
 <ContextMenuItem>:
     pos: self.parent.pos
     submenu_arrow: _submenu_arrow
+    on_children: self._update_arrows()
+    on_parent: self._update_arrows()
+    on_hovered: self.show_submenu(self.right, self.top + self.parent.spacer.height) if args[1] else self.hide_submenu()
+
     canvas.before:
         Color:
             rgb: (0.25, 0.25, 0.25) if self.hovered else (0.15, 0.15, 0.15)
@@ -64,3 +52,20 @@
                 points: [0,0, self.width,self.height/2, 0,self.height]
             Translate:
                 xy: (-self.pos[0], -self.pos[1])
+
+<ContextMenuTextItem>:
+    label: _label
+    size_hint: None, None
+    size: self.parent.width, 26
+    on_text: self.label.text = self.text
+#    on_text: self.label.text = self.text + (' ...' if self.get_submenu() else '')
+
+    Label:
+        pos: self.parent.pos
+        id: _label
+        padding: 10, 0
+        font_size: '14px'
+        halign: 'left'
+        valign: 'middle'
+        size: self.texture_size
+        size_hint: None, 1

@@ -62,7 +62,7 @@ class DesktopVideoPlayer(FloatLayout):
         #                 state=self.setter('state'))
 
     def _init(self, *args):
-        self.context_menu.hide()
+        self.context_menu.visible = False
         # self.context_menu.add_item("Jump to", on_release=self._context_item_release)
         # self.context_menu.add_item("test long text #2", on_release=self._context_item_release)
         # self.context_menu.add_item("test #3", on_release=self._context_item_release)
@@ -154,14 +154,14 @@ class DesktopVideoPlayer(FloatLayout):
             p = self._mouse_pos_to_widget_relative(click_event.pos)
 
             if click_event.button == 'left':
-                if not self.context_menu.visible:
-                    self.toggle_video()
+                if self.context_menu.visible:
+                    self.context_menu.visible = False
                 else:
-                    self.context_menu.hide()
+                    self.toggle_video()
             elif click_event.button == 'right':
                 self.context_menu.show(*p)
         else:
-            self.context_menu.hide()
+            self.context_menu.visible = False
 
     def _get_play_image(self):
         if self._video is None or (self._video and (self._video.state == 'pause' or self._video.state == 'stop')):

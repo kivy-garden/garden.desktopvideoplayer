@@ -28,7 +28,7 @@
     submenu_arrow: _submenu_arrow
     on_children: self._update_arrows()
     on_parent: self._update_arrows()
-    on_hovered: self.show_submenu(self.right, self.top + self.parent.spacer.height) if args[1] else self.hide_submenu()
+    on_hovered: self._on_hovered(args[1])
 
     canvas.before:
         Color:

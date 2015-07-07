@@ -151,7 +151,6 @@ class DesktopVideoPlayer(FloatLayout):
     def _on_touch_down(self, obj, click_event):
         # super(DesktopVideoPlayer, self).on_touch_down(click_event)
         if self.collide_point(*click_event.pos):
-            p = self._mouse_pos_to_widget_relative(click_event.pos)
 
             if click_event.button == 'left':
                 if self.context_menu.visible:
@@ -159,6 +158,7 @@ class DesktopVideoPlayer(FloatLayout):
                 else:
                     self.toggle_video()
             elif click_event.button == 'right':
+                p = self._mouse_pos_to_widget_relative(click_event.pos)
                 self.context_menu.show(*p)
         else:
             self.context_menu.visible = False

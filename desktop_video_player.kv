@@ -84,10 +84,10 @@
         id: context_menu
         ContextMenuTextItem:
             text: "Jump to"
-            on_release: root._context_item_release(args[0])
+#            on_release: root._context_item_release(args[0])
             ContextMenu:
-                ContextMenuTextItem:
-                    text: "SubMenu"
+                JumpToMenu:
+                    on_jump_button_released: root.jump_to(args[1], args[2], args[3])
         ContextMenuTextItem:
             text: "Show info"
         ContextMenuTextItem:
@@ -102,8 +102,6 @@
                             text: "SubMenu #5"
                         ContextMenuTextItem:
                             text: "SubMenu #6"
-                        ContextMenuTextItem:
-                            text: "SubMenu #7"
                             ContextMenu:
                                 ContextMenuTextItem:
                                     text: "SubMenu #8"
@@ -111,7 +109,79 @@
                                     text: "SubMenu #9"
                                 ContextMenuTextItem:
                                     text: "SubMenu #10"
+                        ContextMenuTextItem:
+                            text: "SubMenu #7"
                 ContextMenuTextItem:
                     text: "SubMenu #4"
 
-<JumpToInput>:
+<JumpToMenuTextInput@TextInput>:
+    size_hint: None, None
+    width: 29
+    height: 21
+    font_size: 12
+    padding: 7, 3
+    multiline: False
+
+<JumpToMenu>:
+#    FloatLayout:
+#    pos: self.parent.pos
+#        pos: 100, 100
+#    on_pos: print(self.pos, self.size)
+#    on_size: print(' x'+ str(self.size))
+
+    hours_input: _hours_input
+    minutes_input: _minutes_input
+    seconds_input: _seconds_input
+    size: 145, 52
+    StackLayout:
+        canvas.before:
+            Color:
+                rgb: (0.25, 0.25, 0.25)
+            Rectangle:
+                pos: 0,0
+                size: self.size
+
+        padding: 4
+        spacing: 3
+
+        JumpToMenuTextInput:
+    #        on_touch_down: print(args[1])
+            id: _hours_input
+        Label:
+            text: ":"
+            halign: "center"
+            size_hint: None, None
+            size: self.texture_size
+        JumpToMenuTextInput:
+            id: _minutes_input
+        Label:
+            text: ":"
+            halign: "center"
+            size_hint: None, None
+            size: self.texture_size
+        JumpToMenuTextInput:
+            id: _seconds_input
+        ContextMenuButton:
+            id: _jump_btn
+            text: "GO"
+            font_size: 12
+            width: 27
+            height: 20
+            on_release: root._dispatch_jump_event(_hours_input.text, _minutes_input.text, _seconds_input.text)
+
+        Label:
+#            canvas.before:
+#                Color:
+#                    rgb: (1, 0.25, 0.25)
+#                Rectangle:
+#                    pos: self.pos
+#                    size: self.size
+            text: "use format HH:MM:SS"
+            font_size: 12
+            size_hint: 1, None
+            height: 18
+            text_size: self.size
+            color: 0.8, 0.8, 0.8, 1.0
+            valign: 'middle'
+            line_height: 1
+

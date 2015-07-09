@@ -10,10 +10,10 @@ Alternative video player designed to work well with desktop applications.
 - Controls (including volume) show on mouse hover
 - Togglable time label with elapsed/remaining times
 - Play/pause on mouse click or space bar pressed
-- (planned) Context menu on right mouse click
+- Context menu on right mouse click
 - (planned) `ffmpeg` integration to capture screenshots
 - (planned) Detailed information about the video
-- (planned) Precise jump to location set by hh:mm:ss.frame
+- Precise jump to location set by hh:mm:ss
 - (planned) Bubble showing when hovering over the progress bar
 - (planned) Simple playlist functionality
 
@@ -57,5 +57,7 @@ if __name__ == '__main__':
 # License
 
 DesktopVideoPlayer is licensed under MIT license.
+
+Video used in the `simple_player.py` example app and on the screenshot is from [Construct GTC Teaser Trailer](https://www.youtube.com/watch?v=8JItUtHwKiE).
 
 Icons used in this player are based on [http://www.freebiesgallery.com/video-player-psd/](http://www.freebiesgallery.com/video-player-psd/).

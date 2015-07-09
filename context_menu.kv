@@ -18,24 +18,16 @@
         height: 3
         canvas.before:
             Color:
-                rgb: 0.2, 0.71, 0.90
+                rgb: 0.2, 0.71, 0.9
             Rectangle:
                 pos: self.pos
                 size: self.size
 
 <ContextMenuItem>:
-    pos: self.parent.pos
+    size_hint: None, None
     submenu_arrow: _submenu_arrow
     on_children: self._update_arrows()
     on_parent: self._update_arrows()
-    on_hovered: self._on_hovered(args[1])
-
-    canvas.before:
-        Color:
-            rgb: (0.25, 0.25, 0.25) if self.hovered else (0.15, 0.15, 0.15)
-        Rectangle:
-            pos: self.pos
-            size: self.size
 
     Widget:
         id: _submenu_arrow
@@ -55,10 +47,16 @@
 
 <ContextMenuTextItem>:
     label: _label
-    size_hint: None, None
     size: self.parent.width, 26
     on_text: self.label.text = self.text
-#    on_text: self.label.text = self.text + (' ...' if self.get_submenu() else '')
+    on_hovered: self._on_hovered(args[1])
+
+    canvas.before:
+        Color:
+            rgb: (0.25, 0.25, 0.25) if self.hovered else (0.15, 0.15, 0.15)
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
     Label:
         pos: self.parent.pos
@@ -69,3 +67,11 @@
         valign: 'middle'
         size: self.texture_size
         size_hint: None, 1
+
+<ContextMenuButton@Button>:
+    size_hint: None, None
+    background_normal: ""
+    background_down: ""
+    background_color: 0.2, 0.71, 0.9, 1.0
+    on_press: self.background_color = 0.10, 0.6, 0.8, 1.0
+    on_release: self.background_color = 0.2, 0.71, 0.9, 1.0

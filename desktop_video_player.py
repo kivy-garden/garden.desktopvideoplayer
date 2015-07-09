@@ -2,21 +2,18 @@ import kivy
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.relativelayout import FloatLayout
 from kivy.logger import Logger
-from kivy.uix.image import Image
-from kivy.uix.widget import Widget
 from kivy.core.window import Window
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.lang import Builder
-from kivy.factory import Factory
 from kivy.clock import Clock
 from functools import partial
-from context_menu import ContextMenuItem
+import context_menu
 import kivy.properties as kp
-
 import os
 
 
 _path = os.path.dirname(os.path.realpath(__file__))
+
 
 class DesktopVideoPlayer(FloatLayout):
 
@@ -43,8 +40,8 @@ class DesktopVideoPlayer(FloatLayout):
 
     # last_file_selected = StringProperty('')
 
-    def __init__(self, **kwargs):
-        super(DesktopVideoPlayer, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(DesktopVideoPlayer, self).__init__(*args, **kwargs)
 
         # self.register_event_type('on_context_menu_show')
         # self.register_event_type('on_context_menu_hide')
@@ -109,7 +106,6 @@ class DesktopVideoPlayer(FloatLayout):
         else:
             self._video.state = 'play'
 
-
     def video_state_changed(self):
         self._update_play_btn_image()
 
@@ -124,7 +120,6 @@ class DesktopVideoPlayer(FloatLayout):
             self.mouse_hover = False
 
         # @todo: This is weird, mouse position and widget position aren't relative to this widget
-        # if self._volume_btn.x <= p[0] - self.pos[0] <= self._volume_btn.right and self._volume_btn.y <= p[1] - self.pos[1] <= self._volume_btn.top:
         if self._volume_btn.collide_point(*p):
             self._volume_slider.opacity = 1
             self._volume_slider.disabled = False
@@ -143,15 +138,12 @@ class DesktopVideoPlayer(FloatLayout):
         self._video.source = value
 
     def _on_key_down(self, *args):
-        # super(DesktopVideoPlayer, self).__init__(**kwargs)
         keycode = args[1]
         if keycode == 32:
             self.toggle_video()
 
     def _on_touch_down(self, obj, click_event):
-        # super(DesktopVideoPlayer, self).on_touch_down(click_event)
         if self.collide_point(*click_event.pos):
-
             if click_event.button == 'left':
                 if self.context_menu.visible:
                     self.context_menu.visible = False
@@ -206,18 +198,43 @@ class DesktopVideoPlayer(FloatLayout):
     def _mouse_pos_to_widget_relative(self, pos):
         return pos[0] - self.pos[0], pos[1] - self.pos[1]
 
-    def _context_item_release(self, obj):
-        # pass
-        print(obj)
+    def jump_to(self, hours, minutes, seconds):
+        total_seconds = hours * 3600 + minutes * 60 + seconds
+        if total_seconds > self._video.duration:
+            self._video.seek(1)
+        else:
+            self._video.seek(float(total_seconds) / self._video.duration)
+        self.context_menu.visible = False
 
-    # def on_mouse_over(self):
-    #     print(".dispatch('on_mouse_over')")
-    #     pass
-    #
-    # def on_mouse_out(self):
-    #     pass
+class JumpToMenu(RelativeLayout, context_menu.ContextMenuItem):
 
-#
+    def __init__(self, *args, **kwargs):
+        super(JumpToMenu, self).__init__(*args, **kwargs)
+        self.register_event_type('on_jump_button_released')
+
+    def on_touch_down(self, click_event):
+        super(JumpToMenu, self).on_touch_down(click_event)
+        return self.collide_point(click_event.x, click_event.y)
+
+    def get_time_str(self):
+        return self.hours_input.text + ':' + self.minutes_input.text + ':' + self.seconds_input.text
+
+    def on_jump_button_released(self, hours, minutes, seconds):
+        pass
+
+    def _dispatch_jump_event(self, hours, minutes, seconds):
+        def _str_to_int(s):
+            try:
+                return int(s)
+            except ValueError:
+                return 0
+
+        hours = abs(_str_to_int(hours))
+        minutes = abs(_str_to_int(minutes)) % 60
+        seconds = abs(_str_to_int(seconds)) % 60
+        self.dispatch('on_jump_button_released', hours, minutes, seconds)
+
+
 # class CustomVideoPlayerProgressBar(VideoPlayerProgressBar):
 #     def _update_bubble(self, *l):
 #         seek = self.seek

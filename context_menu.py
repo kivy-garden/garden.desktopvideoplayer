@@ -3,13 +3,10 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.anchorlayout import AnchorLayout
 # from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.button import Button
-from kivy.uix.widget import Widget
 from kivy.core.window import Window
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.lang import Builder
 from kivy.clock import Clock
-from kivy.core.window import WindowBase
 from functools import partial
 import kivy.properties as kp
 import os
@@ -42,9 +39,11 @@ class ContextMenu(GridLayout):
     def show(self, x=None, y=None):
         self.visible = True
         self._add_to_parent()
+        self.hide_submenus()
 
         root_parent = self._get_context_menu_root_parent()
-        # context_total_parent = [widget for widget in self.p]
+        if root_parent is None:
+            return
 
         if x is not None and y is not None:
             if x + self.width < root_parent.width:
@@ -96,19 +95,16 @@ class ContextMenu(GridLayout):
     def get_max_width(self):
         max_width = 0
         for widget in self.menu_item_widgets:
-            width = widget.content_width
-            if width > max_width:
+            width = widget.content_width if widget.content_width is not None else widget.width
+            if width is not None and width > max_width:
                 max_width = width
 
         return max_width
 
     def hide_submenus(self):
         for widget in self.menu_item_widgets:
+            widget.hovered = False
             widget.hide_submenu()
-
-    # @property
-    # def visible(self):
-    #     return bool(self.parent)
 
     def _on_visible(self, new_visibility):
         if new_visibility:
@@ -118,6 +114,7 @@ class ContextMenu(GridLayout):
             self.orig_parent = self.parent
             # self.parent.submenu = self
             self.parent.remove_widget(self)
+            self.hide_submenus()
             if self.clock_event:
                 self.clock_event.cancel()
 
@@ -125,7 +122,8 @@ class ContextMenu(GridLayout):
         if not self.parent:
             self.orig_parent.add_widget(self)
             self.orig_parent = None
-            self.hide_submenus()
+
+            # self.hide_submenus()
             if self._get_root_context_menu() == self:
                 self.clock_event = Clock.schedule_interval(partial(self._check_mouse_hover), 0.05)
 
@@ -149,7 +147,6 @@ class ContextMenu(GridLayout):
             else:
                 widget.hovered = False
 
-        # print(collide_widget)
         return collide_widget
 
     @property
@@ -162,23 +159,21 @@ class ContextMenuItem(object):
     submenu_arrow = kp.ObjectProperty(None)
     submenu = kp.ObjectProperty(None)
 
-    def __init__(self):
-        pass
-        # super(ContextMenuItem, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(ContextMenuItem, self).__init__(*args, **kwargs)
 
     def get_submenu(self):
         return self.submenu if self.submenu != "" else None
 
     def show_submenu(self, x=None, y=None):
         if self.get_submenu():
-            # print(x.pos, x.size)
             self.get_submenu().show(x, y)
 
     def hide_submenu(self):
-        if self.get_submenu():
-            self.get_submenu().visible = False
-            for widget in self.get_submenu().menu_item_widgets:
-                widget.hovered = False
+        submenu = self.get_submenu()
+        if submenu:
+            submenu.visible = False
+            submenu.hide_submenus()
 
     def _update_arrows(self):
         if self.parent is not None and len(self.children) > 0:
@@ -190,17 +185,20 @@ class ContextMenuItem(object):
             # else:
             #     self.submenu = ""
 
-            # print(self.get_submenu())
             if self.get_submenu() is None:
                 self.submenu_arrow.opacity = 0
             else:
                 self.submenu_arrow.opacity = 1
 
-    def _on_hovered(self, hovered):
-        if hovered:
+    def _on_hovered(self, new_hovered):
+        if new_hovered:
             self.show_submenu(self.right, self.top + self.parent.spacer.height)
         else:
             self.hide_submenu()
+
+    # def on_touch_down(self, click_event):
+    #     print(click_event)
+    #     return True
 
     @property
     def siblings(self):
@@ -208,7 +206,7 @@ class ContextMenuItem(object):
 
     @property
     def content_width(self):
-        raise Exception('You have to overload this method.')
+        return None
 
 
 class ContextMenuTextItem(ButtonBehavior, FloatLayout, ContextMenuItem):
@@ -220,8 +218,12 @@ class ContextMenuTextItem(ButtonBehavior, FloatLayout, ContextMenuItem):
         if text:
             self.label.text = text
 
+    # def on_touch_down(self, click_event):
+    #     print('ContextMenuTextItem')
+    #     # return True
+
     def on_release(self):
-        self.parent.visible = False
+        pass
 
     @property
     def content_width(self):

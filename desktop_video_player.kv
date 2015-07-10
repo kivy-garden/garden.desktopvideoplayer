@@ -94,25 +94,32 @@
             text: "Take screenshot"
             ContextMenu:
                 ContextMenuTextItem:
-                    text: "SubMenu #2"
+                    text: "Save to desktop"
                 ContextMenuTextItem:
-                    text: "SubMenu #3"
-                    ContextMenu:
-                        ContextMenuTextItem:
-                            text: "SubMenu #5"
-                        ContextMenuTextItem:
-                            text: "SubMenu #6"
-                            ContextMenu:
-                                ContextMenuTextItem:
-                                    text: "SubMenu #8"
-                                ContextMenuTextItem:
-                                    text: "SubMenu #9"
-                                ContextMenuTextItem:
-                                    text: "SubMenu #10"
-                        ContextMenuTextItem:
-                            text: "SubMenu #7"
+                    text: "Save to my home dir"
                 ContextMenuTextItem:
-                    text: "SubMenu #4"
+                    text: "Save to the same dir as the video"
+
+#                ContextMenuTextItem:
+#                    text: "SubMenu #2"
+#                ContextMenuTextItem:
+#                    text: "SubMenu #3"
+#                    ContextMenu:
+#                        ContextMenuTextItem:
+#                            text: "SubMenu #5"
+#                        ContextMenuTextItem:
+#                            text: "SubMenu #6"
+#                            ContextMenu:
+#                                ContextMenuTextItem:
+#                                    text: "SubMenu #8"
+#                                ContextMenuTextItem:
+#                                    text: "SubMenu #9"
+#                                ContextMenuTextItem:
+#                                    text: "SubMenu #10"
+#                        ContextMenuTextItem:
+#                            text: "SubMenu #7"
+#                ContextMenuTextItem:
+#                    text: "SubMenu #4"
 
 <JumpToMenuTextInput@TextInput>:
     size_hint: None, None
@@ -136,7 +143,7 @@
     StackLayout:
         canvas.before:
             Color:
-                rgb: (0.25, 0.25, 0.25)
+                rgb: (0.15, 0.15, 0.15)
             Rectangle:
                 pos: 0,0
                 size: self.size

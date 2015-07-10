@@ -25,7 +25,7 @@ Install from [Kivy garden](http://kivy-garden.github.io/) with:
 
 ## Demo
 
-Package contains minimal demo project. You can run it from your installed kivy package directory:
+Package contains minimal demo project. You can run it from installed kivy garden package directory:
 
     kivy examples/simple_player.py 
     

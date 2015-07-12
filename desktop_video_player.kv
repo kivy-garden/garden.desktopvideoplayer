@@ -95,10 +95,13 @@
             ContextMenu:
                 ContextMenuTextItem:
                     text: "Save to desktop"
+                    on_release: root.save_screenshot_to_desktop()
                 ContextMenuTextItem:
                     text: "Save to my home dir"
+                    on_release: root.save_screenshot_to_home_dir()
                 ContextMenuTextItem:
                     text: "Save to the same dir as the video"
+                    on_release: root.save_screenshot_to_the_same_dir()
 
 #                ContextMenuTextItem:
 #                    text: "SubMenu #2"

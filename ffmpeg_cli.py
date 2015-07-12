@@ -12,3 +12,13 @@ class FFmpegCLI:
         proc = Popen(self.ffmpeg_bin, ['-version'])
         return proc.returncode == 0
 
+    def take_screenshot(self, file, time, dest):
+        proc = Popen([self.ffmpeg_bin,
+            '-ss', time,
+            '-i', file,
+            '-y',
+            '-v:b', '3',
+            '-vframes', '1',
+            # '-s', '240x200',
+            dest
+        ])

@@ -7,6 +7,7 @@ from kivy.uix.behaviors import ButtonBehavior
 from kivy.lang import Builder
 from kivy.clock import Clock
 from functools import partial
+from ffmpeg_cli import FFmpegCLI
 import context_menu
 import kivy.properties as kp
 import os
@@ -45,6 +46,8 @@ class DesktopVideoPlayer(FloatLayout):
 
         # self.register_event_type('on_context_menu_show')
         # self.register_event_type('on_context_menu_hide')
+
+        self.ffmpeg = FFmpegCLI()
 
         self._update_play_btn_image()
         self._update_volume_btn_image()
@@ -205,6 +208,22 @@ class DesktopVideoPlayer(FloatLayout):
         else:
             self._video.seek(float(total_seconds) / self._video.duration)
         self.context_menu.visible = False
+
+    def take_screenshot(self, hours, minutes, seconds):
+        total_seconds = hours * 3600 + minutes * 60 + seconds
+
+    def save_screenshot_to_desktop(self):
+        # print(self._video.position)
+        # print(self._video.position - int(self._video.position))
+        pass
+
+    def save_screenshot_to_home_dir(self):
+        dest = os.path.join(os.path.splitext(self.source)[0], self.sec_to_time_str(int(self._video.position)) + '.jpg')
+        self.ffmpeg.take_screenshot(self.source, self._video.position, dest)
+
+    def save_screenshot_to_the_same_dir(self):
+        pass
+
 
 class JumpToMenu(RelativeLayout, context_menu.ContextMenuItem):
 

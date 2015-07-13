@@ -154,8 +154,17 @@ class ContextMenu(GridLayout):
         return [w for w in self.children if issubclass(w.__class__, ContextMenuItem)]
 
 
-class ContextMenuItem(object):
+class ContextMenuHoverable(object):
     hovered = kp.BooleanProperty(False)
+
+    def _on_hovered(self, new_hovered):
+        if new_hovered:
+            self.show_submenu(self.right, self.top + self.parent.spacer.height)
+        else:
+            self.hide_submenu()
+
+
+class ContextMenuItem(object):
     submenu_arrow = kp.ObjectProperty(None)
     submenu = kp.ObjectProperty(None)
 
@@ -190,11 +199,6 @@ class ContextMenuItem(object):
             else:
                 self.submenu_arrow.opacity = 1
 
-    def _on_hovered(self, new_hovered):
-        if new_hovered:
-            self.show_submenu(self.right, self.top + self.parent.spacer.height)
-        else:
-            self.hide_submenu()
 
     # def on_touch_down(self, click_event):
     #     print(click_event)
@@ -209,7 +213,7 @@ class ContextMenuItem(object):
         return None
 
 
-class ContextMenuTextItem(ButtonBehavior, FloatLayout, ContextMenuItem):
+class ContextMenuTextItem(ButtonBehavior, FloatLayout, ContextMenuHoverable, ContextMenuItem):
     submenu_postfix = kp.StringProperty(' ...')
     text = kp.StringProperty('')
 

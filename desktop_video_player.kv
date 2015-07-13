@@ -1,5 +1,6 @@
 <DesktopVideoPlayer>:
     _video: video
+    _notify_bubble: notify_bubble
     play_btn: play_btn
     remaining_label: remaining_label
     bottom_layout: bottom_layout
@@ -80,6 +81,24 @@
                     opacity: 0
                     on_value: root.volume = self.value_normalized
 
+    Label:
+        id: notify_bubble
+        opacity: 0
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, 0.7
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        text: "test"
+        size_hint: None, None
+#        text_size: self.texture_size
+        padding: 15, 6
+        size: self.texture_size
+        halign: 'center'
+        valign: 'middle'
+        on_size: self.pos = (self.parent.width / 2 - self.width / 2, self.parent.height - self.height * 2) if self.parent else (0,0)
+
     ContextMenu:
         id: context_menu
         ContextMenuTextItem:
@@ -90,12 +109,13 @@
                     on_jump_button_released: root.jump_to(args[1], args[2], args[3])
         ContextMenuTextItem:
             text: "Show info"
+            on_release: root.show_info()
         ContextMenuTextItem:
             text: "Take screenshot"
             ContextMenu:
-                ContextMenuTextItem:
-                    text: "Save to desktop"
-                    on_release: root.save_screenshot_to_desktop()
+#                ContextMenuTextItem:
+#                    text: "Save to desktop"
+#                    on_release: root.save_screenshot_to_desktop()
                 ContextMenuTextItem:
                     text: "Save to my home dir"
                     on_release: root.save_screenshot_to_home_dir()
@@ -133,24 +153,18 @@
     multiline: False
 
 <JumpToMenu>:
-#    FloatLayout:
-#    pos: self.parent.pos
-#        pos: 100, 100
-#    on_pos: print(self.pos, self.size)
-#    on_size: print(' x'+ str(self.size))
-
     hours_input: _hours_input
     minutes_input: _minutes_input
     seconds_input: _seconds_input
     size: 145, 52
+
     StackLayout:
         canvas.before:
             Color:
                 rgb: (0.15, 0.15, 0.15)
             Rectangle:
-                pos: 0,0
+                pos: self.pos
                 size: self.size
-
         padding: 4
         spacing: 3
 
@@ -178,14 +192,7 @@
             width: 27
             height: 20
             on_release: root._dispatch_jump_event(_hours_input.text, _minutes_input.text, _seconds_input.text)
-
         Label:
-#            canvas.before:
-#                Color:
-#                    rgb: (1, 0.25, 0.25)
-#                Rectangle:
-#                    pos: self.pos
-#                    size: self.size
             text: "use format HH:MM:SS"
             font_size: 12
             size_hint: 1, None

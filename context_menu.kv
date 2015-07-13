@@ -45,18 +45,21 @@
             Translate:
                 xy: (-self.pos[0], -self.pos[1])
 
-<ContextMenuTextItem>:
-    label: _label
-    size: self.parent.width, 26
-    on_text: self.label.text = self.text
-    on_hovered: self._on_hovered(args[1])
 
+<ContextMenuHoverable>:
+    on_hovered: self._on_hovered(args[1])
     canvas.before:
         Color:
             rgb: (0.25, 0.25, 0.25) if self.hovered else (0.15, 0.15, 0.15)
         Rectangle:
             pos: self.pos
             size: self.size
+
+
+<ContextMenuTextItem>:
+    label: _label
+    size: self.parent.width, 26
+    on_text: self.label.text = self.text
 
     Label:
         pos: self.parent.pos
@@ -67,6 +70,7 @@
         valign: 'middle'
         size: self.texture_size
         size_hint: None, 1
+
 
 <ContextMenuButton@Button>:
     size_hint: None, None

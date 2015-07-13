@@ -2,6 +2,7 @@ import kivy
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.relativelayout import FloatLayout
 from kivy.logger import Logger
+from kivy.animation import Animation
 from kivy.core.window import Window
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.lang import Builder
@@ -19,6 +20,7 @@ _path = os.path.dirname(os.path.realpath(__file__))
 class DesktopVideoPlayer(FloatLayout):
 
     _video = kp.ObjectProperty(None)
+    _notify_bubble = kp.ObjectProperty(None)
     _volume_slider = kp.ObjectProperty(None)
     _volume_btn = kp.ObjectProperty(None)
     context_menu = kp.ObjectProperty(None)
@@ -47,8 +49,8 @@ class DesktopVideoPlayer(FloatLayout):
         # self.register_event_type('on_context_menu_show')
         # self.register_event_type('on_context_menu_hide')
 
+        self._bubble_timeout = None
         self.ffmpeg = FFmpegCLI()
-
         self._update_play_btn_image()
         self._update_volume_btn_image()
 
@@ -64,9 +66,29 @@ class DesktopVideoPlayer(FloatLayout):
     def _init(self, *args):
         self.context_menu.visible = False
         # self.context_menu.add_item("Jump to", on_release=self._context_item_release)
-        # self.context_menu.add_item("test long text #2", on_release=self._context_item_release)
-        # self.context_menu.add_item("test #3", on_release=self._context_item_release)
+        self.remove_widget(self._notify_bubble)
         self._initialized = True
+
+    def show_notify_bubble(self, text, timeout=None):
+        if not self._notify_bubble.parent:
+            self.add_widget(self._notify_bubble)
+        self._notify_bubble.text = text
+        anim = Animation(opacity=1.0, duration=0.5)
+        anim.start(self._notify_bubble)
+
+        if self._bubble_timeout:
+            self._bubble_timeout.cancel()
+        if timeout:
+            self._bubble_timeout = Clock.schedule_once(partial(self.hide_notify_bubble), timeout)
+
+    def hide_notify_bubble(self, *args):
+        def _hide(*args):
+            self.remove_widget(self._notify_bubble)
+            self._bubble_timeout = None
+
+        anim = Animation(opacity=0.0, duration=0.5)
+        anim.bind(on_complete=_hide)
+        anim.start(self._notify_bubble)
 
     def loaded(self):
         if self._video.duration != -1:
@@ -90,12 +112,16 @@ class DesktopVideoPlayer(FloatLayout):
         else:
             self.remaining_label.text = '-' + self.sec_to_time_str(duration - progress, force_hours=duration > 3600)
 
-    def sec_to_time_str(self, sec, force_hours=False):
+    def sec_to_time_str(self, sec, force_hours=False, force_decimals=False):
         hours = int(sec / 3600) if sec >= 3600 else 0
         minutes = int((sec - (hours * 3600)) / 60)
         seconds = int(sec - hours * 3600 - minutes * 60)
 
-        return '%02d:%02d:%02d' % (hours, minutes, seconds) if force_hours or hours > 0 else '%02d:%02d' % (minutes, seconds)
+        time_str = '%02d:%02d:%02d' % (hours, minutes, seconds) if force_hours or hours > 0 else '%02d:%02d' % (minutes, seconds)
+        if force_decimals:
+            time_str += str(sec - int(sec))[1:]
+
+        return time_str
 
     def seek(self, instance, pos):
         self._video.seek = pos
@@ -209,20 +235,29 @@ class DesktopVideoPlayer(FloatLayout):
             self._video.seek(float(total_seconds) / self._video.duration)
         self.context_menu.visible = False
 
-    def take_screenshot(self, hours, minutes, seconds):
-        total_seconds = hours * 3600 + minutes * 60 + seconds
+    def take_screenshot(self, position, dest_dir):
+        time_str = self.sec_to_time_str(round(position, 3), force_decimals=True, force_hours=True)
+        dest_file = os.path.join(dest_dir, os.path.splitext(self.source)[0] + '-' + time_str.replace(':', '-') + '.jpg')
+        Logger.info('Saving screenshot from %s to "%s"', time_str, dest_file)
+        # self.show_notify_bubble('Saved to %s' % self.source, 5)
+        def _show_notify(code, out, err):
+            self.show_notify_bubble('Saved to %s' % dest_file, 5)
 
-    def save_screenshot_to_desktop(self):
-        # print(self._video.position)
-        # print(self._video.position - int(self._video.position))
-        pass
+        self.ffmpeg.take_screenshot(self.source, self._video.position, dest_file, _show_notify)
+
+    # def save_screenshot_to_desktop(self):
+    #     pass
 
     def save_screenshot_to_home_dir(self):
-        dest = os.path.join(os.path.splitext(self.source)[0], self.sec_to_time_str(int(self._video.position)) + '.jpg')
-        self.ffmpeg.take_screenshot(self.source, self._video.position, dest)
+        self.take_screenshot(self._video.position, os.path.expanduser('~'))
 
     def save_screenshot_to_the_same_dir(self):
-        pass
+        self.take_screenshot(self._video.position, os.path.dirname(os.path.realpath(self.source)))
+
+    def show_info(self):
+        def _show_info(code, out, err):
+            print(code, out, err)
+        self.ffmpeg.get_info(self.source, _show_info)
 
 
 class JumpToMenu(RelativeLayout, context_menu.ContextMenuItem):

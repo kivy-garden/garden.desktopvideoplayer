@@ -1,8 +1,5 @@
-import kivy
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.anchorlayout import AnchorLayout
-# from kivy.uix.relativelayout import RelativeLayout
 from kivy.core.window import Window
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.lang import Builder
@@ -198,11 +195,6 @@ class ContextMenuItem(object):
                 self.submenu_arrow.opacity = 0
             else:
                 self.submenu_arrow.opacity = 1
-
-
-    # def on_touch_down(self, click_event):
-    #     print(click_event)
-    #     return True
 
     @property
     def siblings(self):

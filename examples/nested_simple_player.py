@@ -16,8 +16,16 @@ from kivy.garden.desktopvideoplayer import DesktopVideoPlayer
 
 
 kv = """
-DesktopVideoPlayer:
-    source: "lq_video.mp4"
+FloatLayout:
+    RelativeLayout:
+        DesktopVideoPlayer:
+            source: "lq_video.mp4"
+    Label:
+        pos: 0, self.parent.height - 40
+        padding: 10, 10
+        text: "Hello, world!"
+        size_hint: None, None
+        size: self.texture_size
 """
 
 class SimplePlayerApp(App):

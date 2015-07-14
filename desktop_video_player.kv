@@ -7,6 +7,7 @@
     _volume_slider: volume_slider
     _volume_btn: volume_btn
     context_menu: context_menu
+    _info_box: _info_box
 
     on_parent: not self._initialized and root._init()
 
@@ -80,6 +81,35 @@
                     value: 100
                     opacity: 0
                     on_value: root.volume = self.value_normalized
+
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, 0.8
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        id: _info_box
+        content: _label
+        opacity: 0
+        ScrollView:
+            id: _wrapper
+            size_hint_y: None
+            height: self.parent.height
+            Label:
+                id: _label
+                text: "ffprobe output goes here"
+                padding: 15, 15
+                pos: 0, 0
+                size_hint_y: None
+                text_size: self.width, None
+                height: self.texture_size[1]
+        Button:
+            text: "Close"
+            pos: _info_box.width - 115, _info_box.height - 55
+            size_hint: None, None
+            size: 100, 40
+            on_release: root.hide_info_box()
 
     Label:
         id: notify_bubble

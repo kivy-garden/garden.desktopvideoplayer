@@ -23,6 +23,7 @@ class DesktopVideoPlayer(FloatLayout):
     _notify_bubble = kp.ObjectProperty(None)
     _volume_slider = kp.ObjectProperty(None)
     _volume_btn = kp.ObjectProperty(None)
+    _info_box = kp.ObjectProperty(None)
     context_menu = kp.ObjectProperty(None)
 
     remaining_label = kp.ObjectProperty(None)
@@ -39,6 +40,8 @@ class DesktopVideoPlayer(FloatLayout):
     auto_play = kp.BooleanProperty(True)
     show_elapsed_time = kp.BooleanProperty(True)
     volume_muted = kp.BooleanProperty(False)
+    check_mouse_hover = kp.BooleanProperty(False)
+
     _initialized = kp.BooleanProperty(False)
 
     # last_file_selected = StringProperty('')
@@ -50,12 +53,14 @@ class DesktopVideoPlayer(FloatLayout):
         # self.register_event_type('on_context_menu_hide')
 
         self._bubble_timeout = None
+        self._mouse_check_timer = None
         self.ffmpeg = FFmpegCLI()
         self._update_play_btn_image()
         self._update_volume_btn_image()
 
-        Clock.schedule_interval(partial(self._check_mouse_hover), 0.1)
+        self.check_mouse_hover = True
         Window.bind(on_key_down=self._on_key_down)
+
 
         # self.video.bind(duration=self.setter('duration'),
         #                 position=self.setter('position'),
@@ -67,7 +72,14 @@ class DesktopVideoPlayer(FloatLayout):
         self.context_menu.visible = False
         # self.context_menu.add_item("Jump to", on_release=self._context_item_release)
         self.remove_widget(self._notify_bubble)
+        self.remove_widget(self._info_box)
         self._initialized = True
+
+    def on_check_mouse_hover(self, obj, new_value):
+        if new_value:
+            self._mouse_check_timer = Clock.schedule_interval(partial(self._check_mouse_hover), 0.1)
+        else:
+            self._mouse_check_timer.cancel()
 
     def show_notify_bubble(self, text, timeout=None):
         if not self._notify_bubble.parent:
@@ -138,7 +150,7 @@ class DesktopVideoPlayer(FloatLayout):
     def video_state_changed(self):
         self._update_play_btn_image()
 
-    def _check_mouse_hover(self, dt):
+    def _check_mouse_hover(self, *args):
         p = Window.mouse_pos
 
         if (self.x < p[0] - 1 and p[0] + 1 < self.right) and (self.y < p[1] - 2 and p[1] < self.top):
@@ -148,7 +160,6 @@ class DesktopVideoPlayer(FloatLayout):
             self.bottom_layout.opacity = 0
             self.mouse_hover = False
 
-        # @todo: This is weird, mouse position and widget position aren't relative to this widget
         if self._volume_btn.collide_point(*p):
             self._volume_slider.opacity = 1
             self._volume_slider.disabled = False
@@ -239,11 +250,14 @@ class DesktopVideoPlayer(FloatLayout):
         time_str = self.sec_to_time_str(round(position, 3), force_decimals=True, force_hours=True)
         dest_file = os.path.join(dest_dir, os.path.splitext(self.source)[0] + '-' + time_str.replace(':', '-') + '.jpg')
         Logger.info('Saving screenshot from %s to "%s"', time_str, dest_file)
-        # self.show_notify_bubble('Saved to %s' % self.source, 5)
+
+        self.show_notify_bubble('Taking screenshot ...')
+
         def _show_notify(code, out, err):
-            self.show_notify_bubble('Saved to %s' % dest_file, 5)
+            self.show_notify_bubble('Saved to {path}'.format(path=dest_file), 5)
 
         self.ffmpeg.take_screenshot(self.source, self._video.position, dest_file, _show_notify)
+        self.context_menu.visible = False
 
     # def save_screenshot_to_desktop(self):
     #     pass
@@ -256,8 +270,28 @@ class DesktopVideoPlayer(FloatLayout):
 
     def show_info(self):
         def _show_info(code, out, err):
-            print(code, out, err)
+            self.show_info_box(err)
         self.ffmpeg.get_info(self.source, _show_info)
+        self.context_menu.visible = False
+
+    def hide_info_box(self):
+        def _hide(*args):
+            self.remove_widget(self._info_box)
+
+        self.check_mouse_hover = True
+        anim = Animation(opacity=0, duration=0.5)
+        anim.bind(on_complete=_hide)
+        anim.start(self._info_box)
+
+    def show_info_box(self, text):
+        self._info_box.content.text = text
+        self.check_mouse_hover = False
+
+        if not self._info_box.parent:
+            self.add_widget(self._info_box)
+
+        anim = Animation(opacity=1, duration=0.5)
+        anim.start(self._info_box)
 
 
 class JumpToMenu(RelativeLayout, context_menu.ContextMenuItem):

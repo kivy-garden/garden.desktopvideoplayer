@@ -27,13 +27,13 @@ class FFmpegCLI:
     def is_available(self, callback):
         self._run_in_thread(self._run_cmd, [self.ffmpeg_bin, '-version'], callback)
 
-    def take_screenshot(self, file, seconds, dest, callback):
+    def take_screenshot(self, file, seconds, dest, callback=None, frames=1, quality=1):
         self._run_in_thread(self._run_cmd, [self.ffmpeg_bin,
             '-ss', str(seconds),
             '-i', file,
             '-y',
-            '-v:b', '3',
-            '-vframes', '1',
+            '-qscale:v', str(quality),
+            '-vframes', str(frames),
             dest
         ], callback)
 

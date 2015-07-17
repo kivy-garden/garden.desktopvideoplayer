@@ -1,5 +1,6 @@
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.relativelayout import RelativeLayout
 from kivy.core.window import Window
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.lang import Builder
@@ -14,6 +15,7 @@ class ContextMenu(GridLayout):
 
     visible = kp.BooleanProperty(False)
     spacer = kp.ObjectProperty(None)
+    root_parent = kp.ObjectProperty(None)
 
     def __init__(self, *args, **kwargs):
         super(ContextMenu, self).__init__(*args, **kwargs)
@@ -21,14 +23,14 @@ class ContextMenu(GridLayout):
         self.orig_parent = None
         self._on_visible(False)
 
-    def add_obj(self, widget, sub_menu=None):
+    def add_item(self, widget):
         self.add_widget(widget)
 
-    def add_item(self, text, sub_menu=None, on_release=None):
+    def add_text_item(self, text, on_release=None):
         item = ContextMenuTextItem(text)
         if on_release:
             item.bind(on_release=on_release)
-        self.add_obj(item, sub_menu=sub_menu)
+        self.add_item(item)
 
     # def hide(self):
     #     self.visible = False
@@ -38,21 +40,23 @@ class ContextMenu(GridLayout):
         self._add_to_parent()
         self.hide_submenus()
 
-        root_parent = self._get_context_menu_root_parent()
+        root_parent = self.root_parent if self.root_parent is not None else self.get_context_menu_root_parent()
         if root_parent is None:
             return
 
+        point_relative_to_root = root_parent.to_local(*self.to_window(x, y))
+
         if x is not None and y is not None:
-            if x + self.width < root_parent.width:
+            if point_relative_to_root[0] + self.width < root_parent.width:
                 pox_x = x
             else:
                 pox_x = x - self.width
-                if issubclass(self.parent.__class__, ContextMenuItem) :
+                if issubclass(self.parent.__class__, ContextMenuItem):
                     pox_x -= self.parent.width
 
-            if y - self.height < 0:
+            if point_relative_to_root[1] - self.height < 0:
                 pos_y = y
-                if issubclass(self.parent.__class__, ContextMenuItem) :
+                if issubclass(self.parent.__class__, ContextMenuItem):
                     pos_y -= self.parent.height + self.spacer.height
             else:
                 pos_y = y - self.height
@@ -61,15 +65,16 @@ class ContextMenu(GridLayout):
             pos = (pox_x + parent_pos[0], pos_y + parent_pos[1])
 
             self.pos = pos
-            # print(self.pos)
-            # self._set_positions()
 
-    def _get_context_menu_root_parent(self):
-        context_root_parent = self.parent
-        while issubclass(context_root_parent.__class__, ContextMenuItem) \
-                or issubclass(context_root_parent.__class__, ContextMenu):
-            context_root_parent = context_root_parent.parent
-        return context_root_parent
+    def get_context_menu_root_parent(self):
+        """
+        Return the bounding box widget for positioning submenus. By default it's root context menu's parent.
+        """
+        if self.root_parent is not None:
+            return self.root_parent
+        root_context_menu = self._get_root_context_menu()
+        return root_context_menu.root_parent if root_context_menu.root_parent else root_context_menu.parent
+
 
     def _get_root_context_menu(self):
         root = self
@@ -78,10 +83,12 @@ class ContextMenu(GridLayout):
             root = root.parent
         return root
 
-
     def _check_mouse_hover(self, obj):
+        widget_pos = self.to_window(0, 0)
         point = self.to_local(*Window.mouse_pos)
-        collided_widget = self.self_or_submenu_collide_with_point(*point)
+        # print(point, widget_pos)
+        collided_widget = self.self_or_submenu_collide_with_point(*Window.mouse_pos)
+        # collided_widget = self.self_or_submenu_collide_with_point(point[0] - widget_pos[0], point[1] - widget_pos[1])
 
     def get_height(self):
         height = 0
@@ -109,7 +116,6 @@ class ContextMenu(GridLayout):
             self._add_to_parent()
         elif self.parent and not new_visibility:
             self.orig_parent = self.parent
-            # self.parent.submenu = self
             self.parent.remove_widget(self)
             self.hide_submenus()
             if self.clock_event:
@@ -120,7 +126,6 @@ class ContextMenu(GridLayout):
             self.orig_parent.add_widget(self)
             self.orig_parent = None
 
-            # self.hide_submenus()
             if self._get_root_context_menu() == self:
                 self.clock_event = Clock.schedule_interval(partial(self._check_mouse_hover), 0.05)
 
@@ -133,8 +138,11 @@ class ContextMenu(GridLayout):
             if submenu is not None:
                 queue += submenu.menu_item_widgets
 
-            if widget.collide_point(x, y):
+            # print(widget.to_local(x, y))
+            widget_pos = widget.to_window(0, 0)
+            if widget.collide_point(x - widget_pos[0], y - widget_pos[1]) and not widget.disabled:
                 widget.hovered = True
+
                 collide_widget = widget
                 for sib in widget.siblings:
                     sib.hovered = False
@@ -151,16 +159,6 @@ class ContextMenu(GridLayout):
         return [w for w in self.children if issubclass(w.__class__, ContextMenuItem)]
 
 
-class ContextMenuHoverable(object):
-    hovered = kp.BooleanProperty(False)
-
-    def _on_hovered(self, new_hovered):
-        if new_hovered:
-            self.show_submenu(self.right, self.top + self.parent.spacer.height)
-        else:
-            self.hide_submenu()
-
-
 class ContextMenuItem(object):
     submenu_arrow = kp.ObjectProperty(None)
     submenu = kp.ObjectProperty(None)
@@ -173,7 +171,7 @@ class ContextMenuItem(object):
 
     def show_submenu(self, x=None, y=None):
         if self.get_submenu():
-            self.get_submenu().show(x, y)
+            self.get_submenu().show(*self._root_parent.to_local(x, y))
 
     def hide_submenu(self):
         submenu = self.get_submenu()
@@ -204,8 +202,23 @@ class ContextMenuItem(object):
     def content_width(self):
         return None
 
+    @property
+    def _root_parent(self):
+        return self.parent.get_context_menu_root_parent()
 
-class ContextMenuTextItem(ButtonBehavior, FloatLayout, ContextMenuHoverable, ContextMenuItem):
+
+class ContextMenuHoverableItem(object):
+    hovered = kp.BooleanProperty(False)
+
+    def _on_hovered(self, new_hovered):
+        if new_hovered:
+            point = self.right, self.top + self.parent.spacer.height
+            self.show_submenu(self.width, self.height + self.parent.spacer.height)
+        else:
+            self.hide_submenu()
+
+
+class ContextMenuTextItem(ButtonBehavior, RelativeLayout, ContextMenuHoverableItem, ContextMenuItem):
     submenu_postfix = kp.StringProperty(' ...')
     text = kp.StringProperty('')
 

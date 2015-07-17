@@ -34,25 +34,27 @@
         size_hint: None, None
         width: 6
         height: 11
-        pos: self.parent.right - self.width - 5, self.parent.y + ((self.parent.height - self.height) / 2)
+#        pos: 10, 10
+        pos: self.parent.width - self.width - 5, (self.parent.height - self.height) / 2
+#        on_pos: print(self.pos)
         canvas.before:
             Translate:
                 xy: self.pos
             Color:
-                rgb: (1, 1, 1)
+                rgb: (0.35, 0.35, 0.35) if self.disabled else (1, 1, 1)
             Triangle:
                 points: [0,0, self.width,self.height/2, 0,self.height]
             Translate:
                 xy: (-self.pos[0], -self.pos[1])
 
 
-<ContextMenuHoverable>:
+<ContextMenuHoverableItem>:
     on_hovered: self._on_hovered(args[1])
     canvas.before:
         Color:
-            rgb: (0.25, 0.25, 0.25) if self.hovered else (0.15, 0.15, 0.15)
+            rgb: (0.25, 0.25, 0.25) if self.hovered and not self.disabled else (0.15, 0.15, 0.15)
         Rectangle:
-            pos: self.pos
+            pos: 0,0
             size: self.size
 
 
@@ -62,7 +64,7 @@
     on_text: self.label.text = self.text
 
     Label:
-        pos: self.parent.pos
+        pos: 0,0
         id: _label
         padding: 10, 0
         font_size: '14px'
@@ -79,3 +81,10 @@
     background_color: 0.2, 0.71, 0.9, 1.0
     on_press: self.background_color = 0.10, 0.6, 0.8, 1.0
     on_release: self.background_color = 0.2, 0.71, 0.9, 1.0
+
+<ContextMenuTextInput@TextInput>:
+    size_hint: None, None
+    height: 20
+    font_size: 12
+    padding: 7, 2
+    multiline: False

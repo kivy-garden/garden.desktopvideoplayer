@@ -1,13 +1,15 @@
 <DesktopVideoPlayer>:
     _video: video
-    _notify_bubble: notify_bubble
     play_btn: play_btn
     remaining_label: remaining_label
     bottom_layout: bottom_layout
     _volume_slider: volume_slider
     _volume_btn: volume_btn
-    context_menu: context_menu
-    _info_box: _info_box
+    # strong reference
+    # http://kivy.org/docs/guide/lang.html#referencing-widgets
+    context_menu: context_menu.__self__
+    _notify_bubble: notify_bubble.__self__
+    _info_box: _info_box.__self__
 
     on_parent: not self._initialized and root._init()
 
@@ -15,10 +17,10 @@
         id: video
         pos: root.pos
         opacity: 0
-        on_duration: root.loaded()
+        on_duration: root._loaded()
         allow_stretch: True
-        on_position: root.update_progress(video.position)
-        on_state: root.video_state_changed()
+        on_position: root._update_progress(video.position)
+        on_state: root._video_state_changed()
         on_touch_down: root._on_touch_down(*args)
 #        on_touch_down: root._on_touch_down(args[1])
 #        on_key_down: root.on_key_down(args[1])
@@ -90,15 +92,20 @@
                 pos: self.pos
                 size: self.size
         id: _info_box
+        on_parent: self.pos = self.parent.pos if self.parent is not None else (0,0)
         content: _label
         opacity: 0
         ScrollView:
             id: _wrapper
             size_hint_y: None
             height: self.parent.height
+            do_scroll_x: False
             Label:
                 id: _label
                 text: "ffprobe output goes here"
+                on_text: _wrapper.scroll_y = 1
+                font_name: "DroidSansMono"
+                font_size: "12px"
                 padding: 15, 15
                 pos: 0, 0
                 size_hint_y: None
@@ -116,7 +123,7 @@
         opacity: 0
         canvas.before:
             Color:
-                rgba: 0, 0, 0, 0.7
+                rgba: 0, 0, 0, 0.8
             Rectangle:
                 pos: self.pos
                 size: self.size
@@ -152,6 +159,10 @@
                 ContextMenuTextItem:
                     text: "Save to the same dir as the video"
                     on_release: root.save_screenshot_to_the_same_dir()
+                TakeScreenshotSaveTo:
+                    text: "Save to"
+#                    on_release: root.save_screenshot_to_the_same_dir()
+
 
 #                ContextMenuTextItem:
 #                    text: "SubMenu #2"
@@ -174,13 +185,14 @@
 #                ContextMenuTextItem:
 #                    text: "SubMenu #4"
 
-<JumpToMenuTextInput@TextInput>:
-    size_hint: None, None
+<TakeScreenshotSaveTo>:
+    ContextMenuTextInput:
+        width: 50
+        pos: self.parent.label.width, 3
+
+
+<JumpToMenuTextInput@ContextMenuTextInput>:
     width: 29
-    height: 21
-    font_size: 12
-    padding: 7, 3
-    multiline: False
 
 <JumpToMenu>:
     hours_input: _hours_input

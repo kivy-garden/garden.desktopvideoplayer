@@ -9,7 +9,7 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from functools import partial
 from ffmpeg_cli import FFmpegCLI
-import context_menu
+from context_menu import ContextMenuItem, ContextMenuTextItem
 import kivy.properties as kp
 import os
 
@@ -17,7 +17,7 @@ import os
 _path = os.path.dirname(os.path.realpath(__file__))
 
 
-class DesktopVideoPlayer(FloatLayout):
+class DesktopVideoPlayer(RelativeLayout):
 
     _video = kp.ObjectProperty(None)
     _notify_bubble = kp.ObjectProperty(None)
@@ -31,10 +31,11 @@ class DesktopVideoPlayer(FloatLayout):
     bottom_layout = kp.ObjectProperty(None)
 
     # path = kp.StringProperty(_path)
-    current_play_btn_image = kp.StringProperty('atlas://data/images/defaulttheme/button')
-    current_volume_btn_image = kp.StringProperty('atlas://data/images/defaulttheme/button')
+    current_play_btn_image = kp.StringProperty('')
+    current_volume_btn_image = kp.StringProperty('')
 
     source = kp.StringProperty('')
+    volume = kp.NumericProperty(1.0)
 
     mouse_hover = kp.BooleanProperty(False)
     auto_play = kp.BooleanProperty(True)
@@ -54,7 +55,7 @@ class DesktopVideoPlayer(FloatLayout):
 
         self._bubble_timeout = None
         self._mouse_check_timer = None
-        self.ffmpeg = FFmpegCLI()
+        self._ffmpeg = FFmpegCLI()
         self._update_play_btn_image()
         self._update_volume_btn_image()
 
@@ -75,6 +76,10 @@ class DesktopVideoPlayer(FloatLayout):
         self.remove_widget(self._info_box)
         self._initialized = True
 
+    @property
+    def context_menu_visible(self):
+        return bool(self.context_menu)
+
     def on_check_mouse_hover(self, obj, new_value):
         if new_value:
             self._mouse_check_timer = Clock.schedule_interval(partial(self._check_mouse_hover), 0.1)
@@ -85,7 +90,7 @@ class DesktopVideoPlayer(FloatLayout):
         if not self._notify_bubble.parent:
             self.add_widget(self._notify_bubble)
         self._notify_bubble.text = text
-        anim = Animation(opacity=1.0, duration=0.5)
+        anim = Animation(opacity=1.0, duration=0.25)
         anim.start(self._notify_bubble)
 
         if self._bubble_timeout:
@@ -98,11 +103,11 @@ class DesktopVideoPlayer(FloatLayout):
             self.remove_widget(self._notify_bubble)
             self._bubble_timeout = None
 
-        anim = Animation(opacity=0.0, duration=0.5)
+        anim = Animation(opacity=0.0, duration=0.25)
         anim.bind(on_complete=_hide)
         anim.start(self._notify_bubble)
 
-    def loaded(self):
+    def _loaded(self):
         if self._video.duration != -1:
             Logger.info('Loaded %s, duration %d', self._video.source, self._video.duration)
             # self._video.seek(0)
@@ -112,7 +117,7 @@ class DesktopVideoPlayer(FloatLayout):
             if self.auto_play:
                 self._video.state = 'play'
 
-    def update_progress(self, val):
+    def _update_progress(self, val):
         self._update_remaining_time()
         self.ids.progress_bar.value = val
 
@@ -139,6 +144,9 @@ class DesktopVideoPlayer(FloatLayout):
         self._video.seek = pos
 
     def toggle_video(self):
+        """
+        Play/Pause video
+        """
         if self._video.duration == -1:
             return
 
@@ -147,13 +155,20 @@ class DesktopVideoPlayer(FloatLayout):
         else:
             self._video.state = 'play'
 
-    def video_state_changed(self):
+    def _video_state_changed(self):
         self._update_play_btn_image()
 
     def _check_mouse_hover(self, *args):
-        p = Window.mouse_pos
+        widget_pos = self.to_window(0, 0)
+        mouse_pos = Window.mouse_pos
+        # p = self.to_local(*Window.mouse_pos)
+        # print(p, self.pos, self.to_local(*p), self.to_window(*p))
+        # print(self.to_window(*p))
+        p = Window.mouse_pos[0] - widget_pos[0], Window.mouse_pos[1] - widget_pos[1]
+        # print(mouse_pos, p)
 
         if (self.x < p[0] - 1 and p[0] + 1 < self.right) and (self.y < p[1] - 2 and p[1] < self.top):
+        # if self.collide_point(*p):
             self.bottom_layout.opacity = 1
             self.mouse_hover = True
         else:
@@ -176,6 +191,10 @@ class DesktopVideoPlayer(FloatLayout):
     def on_source(self, obj, value):
         Logger.info('Opening "%s"', value)
         self._video.source = value
+
+    def on_volume(self, obj, new_value):
+        self._video.volume = new_value
+        self._update_volume_btn_image()
 
     def _on_key_down(self, *args):
         keycode = args[1]
@@ -219,20 +238,14 @@ class DesktopVideoPlayer(FloatLayout):
         self.current_volume_btn_image = self._get_volume_image()
 
     def toggle_muted(self):
-        self.volume_muted = True if not self.volume_muted else False
+        # negate boolean value represented as BooleanProperty
+        # @todo: There might be an easier way
+        # self.volume_muted = True if not self.volume_muted else False
+        self.volume_muted = not bool(self.volume_muted)
         if self.volume_muted:
             self._video.volume = 0
         else:
             self._video.volume = self._volume_slider.value_normalized
-        self._update_volume_btn_image()
-
-    @property
-    def volume(self):
-        return self._video.volume
-
-    @volume.setter
-    def volume(self, value):
-        self._video.volume = value
         self._update_volume_btn_image()
 
     def _mouse_pos_to_widget_relative(self, pos):
@@ -248,7 +261,8 @@ class DesktopVideoPlayer(FloatLayout):
 
     def take_screenshot(self, position, dest_dir):
         time_str = self.sec_to_time_str(round(position, 3), force_decimals=True, force_hours=True)
-        dest_file = os.path.join(dest_dir, os.path.splitext(self.source)[0] + '-' + time_str.replace(':', '-') + '.jpg')
+        dest_file = os.path.join(dest_dir, os.path.splitext(os.path.basename(self.source))[0] + '-' + time_str.replace(':', '-') + '.jpg')
+        print(dest_dir, dest_file)
         Logger.info('Saving screenshot from %s to "%s"', time_str, dest_file)
 
         self.show_notify_bubble('Taking screenshot ...')
@@ -256,7 +270,7 @@ class DesktopVideoPlayer(FloatLayout):
         def _show_notify(code, out, err):
             self.show_notify_bubble('Saved to {path}'.format(path=dest_file), 5)
 
-        self.ffmpeg.take_screenshot(self.source, self._video.position, dest_file, _show_notify)
+        self._ffmpeg.take_screenshot(self.source, self._video.position, dest_file, _show_notify)
         self.context_menu.visible = False
 
     # def save_screenshot_to_desktop(self):
@@ -271,7 +285,7 @@ class DesktopVideoPlayer(FloatLayout):
     def show_info(self):
         def _show_info(code, out, err):
             self.show_info_box(err)
-        self.ffmpeg.get_info(self.source, _show_info)
+        self._ffmpeg.get_info(self.source, _show_info)
         self.context_menu.visible = False
 
     def hide_info_box(self):
@@ -279,7 +293,7 @@ class DesktopVideoPlayer(FloatLayout):
             self.remove_widget(self._info_box)
 
         self.check_mouse_hover = True
-        anim = Animation(opacity=0, duration=0.5)
+        anim = Animation(opacity=0, duration=0.25)
         anim.bind(on_complete=_hide)
         anim.start(self._info_box)
 
@@ -290,11 +304,11 @@ class DesktopVideoPlayer(FloatLayout):
         if not self._info_box.parent:
             self.add_widget(self._info_box)
 
-        anim = Animation(opacity=1, duration=0.5)
+        anim = Animation(opacity=1, duration=0.25)
         anim.start(self._info_box)
 
 
-class JumpToMenu(RelativeLayout, context_menu.ContextMenuItem):
+class JumpToMenu(RelativeLayout, ContextMenuItem):
 
     def __init__(self, *args, **kwargs):
         super(JumpToMenu, self).__init__(*args, **kwargs)
@@ -322,6 +336,10 @@ class JumpToMenu(RelativeLayout, context_menu.ContextMenuItem):
         seconds = abs(_str_to_int(seconds)) % 60
         self.dispatch('on_jump_button_released', hours, minutes, seconds)
 
+
+class TakeScreenshotSaveTo(ContextMenuTextItem):
+    def __init__(self, *args, **kwargs):
+        super(TakeScreenshotSaveTo, self).__init__(*args, **kwargs)
 
 # class CustomVideoPlayerProgressBar(VideoPlayerProgressBar):
 #     def _update_bubble(self, *l):

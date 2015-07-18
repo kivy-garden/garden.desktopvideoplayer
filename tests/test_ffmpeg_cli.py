@@ -13,7 +13,10 @@ class FFmpegCLITestCase(unittest.TestCase):
         self.cli = FFmpegCLI()
 
     def test_is_available(self):
-        self.cli.is_available(lambda code,out,err: self.assertEqual(code, 0))
+        self.cli.is_available(lambda result: self.assertTrue(result))
+
+    def test_version(self):
+        self.cli.version(lambda code,out,err: self.assertEqual(code, 0))
 
     def test_take_screenshot(self):
         if os.path.exists(self.test_img1_path):

@@ -2,6 +2,7 @@ import unittest
 
 from desktop_video_player import DesktopVideoPlayer
 
+
 class DesktopVideoPlayerTestCase(unittest.TestCase):
 
     def setUp(self):

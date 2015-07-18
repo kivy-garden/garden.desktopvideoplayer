@@ -1,6 +1,7 @@
 import kivy
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.relativelayout import FloatLayout
+# from kivy.uix.label import Label
 from kivy.logger import Logger
 from kivy.animation import Animation
 from kivy.core.window import Window
@@ -9,7 +10,7 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from functools import partial
 from ffmpeg_cli import FFmpegCLI
-from context_menu import ContextMenuItem, ContextMenuTextItem
+from context_menu import ContextMenuItem, ContextMenuTextItem, ContextMenuHoverableItem
 import kivy.properties as kp
 import os
 
@@ -25,6 +26,7 @@ class DesktopVideoPlayer(RelativeLayout):
     _volume_btn = kp.ObjectProperty(None)
     _info_box = kp.ObjectProperty(None)
     context_menu = kp.ObjectProperty(None)
+    _advanced_options = kp.ObjectProperty(None)
 
     remaining_label = kp.ObjectProperty(None)
     play_btn = kp.ObjectProperty(None)
@@ -45,6 +47,8 @@ class DesktopVideoPlayer(RelativeLayout):
 
     _initialized = kp.BooleanProperty(False)
 
+
+
     # last_file_selected = StringProperty('')
 
     def __init__(self, *args, **kwargs):
@@ -53,9 +57,10 @@ class DesktopVideoPlayer(RelativeLayout):
         # self.register_event_type('on_context_menu_show')
         # self.register_event_type('on_context_menu_hide')
 
+        self._bubble_anim = None
         self._bubble_timeout = None
         self._mouse_check_timer = None
-        self._ffmpeg = FFmpegCLI()
+        self._advanced_options_parent = None
         self._update_play_btn_image()
         self._update_volume_btn_image()
 
@@ -74,7 +79,17 @@ class DesktopVideoPlayer(RelativeLayout):
         # self.context_menu.add_item("Jump to", on_release=self._context_item_release)
         self.remove_widget(self._notify_bubble)
         self.remove_widget(self._info_box)
+
+        self._advanced_options_parent = self._advanced_options.parent
+        self._advanced_options.parent.remove_widget(self._advanced_options)
+
+        self._ffmpeg = FFmpegCLI()
+        self._ffmpeg.is_available(lambda result: self._toggle_video_menu_options(result))
         self._initialized = True
+
+    def _toggle_video_menu_options(self, disabled):
+        for widget in self.context_menu.menu_item_widgets:
+            widget.disabled = not disabled
 
     @property
     def context_menu_visible(self):
@@ -89,9 +104,13 @@ class DesktopVideoPlayer(RelativeLayout):
     def show_notify_bubble(self, text, timeout=None):
         if not self._notify_bubble.parent:
             self.add_widget(self._notify_bubble)
+
+        if self._bubble_anim:
+            self._bubble_anim.cancel(self._notify_bubble)
+
         self._notify_bubble.text = text
-        anim = Animation(opacity=1.0, duration=0.25)
-        anim.start(self._notify_bubble)
+        self._bubble_anim = Animation(opacity=1.0, duration=0.25)
+        self._bubble_anim.start(self._notify_bubble)
 
         if self._bubble_timeout:
             self._bubble_timeout.cancel()
@@ -103,9 +122,9 @@ class DesktopVideoPlayer(RelativeLayout):
             self.remove_widget(self._notify_bubble)
             self._bubble_timeout = None
 
-        anim = Animation(opacity=0.0, duration=0.25)
-        anim.bind(on_complete=_hide)
-        anim.start(self._notify_bubble)
+        self._bubble_anim = Animation(opacity=0.0, duration=0.25)
+        self._bubble_anim.bind(on_complete=_hide)
+        self._bubble_anim.start(self._notify_bubble)
 
     def _loaded(self):
         if self._video.duration != -1:
@@ -262,7 +281,6 @@ class DesktopVideoPlayer(RelativeLayout):
     def take_screenshot(self, position, dest_dir):
         time_str = self.sec_to_time_str(round(position, 3), force_decimals=True, force_hours=True)
         dest_file = os.path.join(dest_dir, os.path.splitext(os.path.basename(self.source))[0] + '-' + time_str.replace(':', '-') + '.jpg')
-        print(dest_dir, dest_file)
         Logger.info('Saving screenshot from %s to "%s"', time_str, dest_file)
 
         self.show_notify_bubble('Taking screenshot ...')
@@ -281,6 +299,11 @@ class DesktopVideoPlayer(RelativeLayout):
 
     def save_screenshot_to_the_same_dir(self):
         self.take_screenshot(self._video.position, os.path.dirname(os.path.realpath(self.source)))
+
+    def save_screenshot_to_dir(self, dir):
+        if not os.path.exists(dir):
+            return
+        self.take_screenshot(self._video.position, dir)
 
     def show_info(self):
         def _show_info(code, out, err):
@@ -308,7 +331,7 @@ class DesktopVideoPlayer(RelativeLayout):
         anim.start(self._info_box)
 
 
-class JumpToMenu(RelativeLayout, ContextMenuItem):
+class JumpToMenu(RelativeLayout, ContextMenuHoverableItem):
 
     def __init__(self, *args, **kwargs):
         super(JumpToMenu, self).__init__(*args, **kwargs)
@@ -340,6 +363,12 @@ class JumpToMenu(RelativeLayout, ContextMenuItem):
 class TakeScreenshotSaveTo(ContextMenuTextItem):
     def __init__(self, *args, **kwargs):
         super(TakeScreenshotSaveTo, self).__init__(*args, **kwargs)
+        self.register_event_type('on_save_released')
+
+    def on_save_released(self, text):
+        pass
+
+
 
 # class CustomVideoPlayerProgressBar(VideoPlayerProgressBar):
 #     def _update_bubble(self, *l):

@@ -84,11 +84,9 @@ class ContextMenu(GridLayout):
         return root
 
     def _check_mouse_hover(self, obj):
-        widget_pos = self.to_window(0, 0)
-        point = self.to_local(*Window.mouse_pos)
-        # print(point, widget_pos)
+        # widget_pos = self.to_window(0, 0)
+        # point = self.to_local(*Window.mouse_pos)
         collided_widget = self.self_or_submenu_collide_with_point(*Window.mouse_pos)
-        # collided_widget = self.self_or_submenu_collide_with_point(point[0] - widget_pos[0], point[1] - widget_pos[1])
 
     def get_height(self):
         height = 0
@@ -207,7 +205,7 @@ class ContextMenuItem(object):
         return self.parent.get_context_menu_root_parent()
 
 
-class ContextMenuHoverableItem(object):
+class ContextMenuHoverableItem(ContextMenuItem):
     hovered = kp.BooleanProperty(False)
 
     def _on_hovered(self, new_hovered):
@@ -218,18 +216,27 @@ class ContextMenuHoverableItem(object):
             self.hide_submenu()
 
 
-class ContextMenuTextItem(ButtonBehavior, RelativeLayout, ContextMenuHoverableItem, ContextMenuItem):
+class ContextMenuTextItem(ButtonBehavior, RelativeLayout, ContextMenuHoverableItem):
     submenu_postfix = kp.StringProperty(' ...')
     text = kp.StringProperty('')
+    font_size = kp.NumericProperty('14pd')
 
-    def __init__(self, text=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(ContextMenuTextItem, self).__init__(*args, **kwargs)
-        if text:
-            self.label.text = text
+        self.bind(text=self._on_text)
+        self.bind(font_size=self._on_font_size)
+        # if text:
+        #     self.label.text = text
 
     # def on_touch_down(self, click_event):
     #     print('ContextMenuTextItem')
     #     # return True
+
+    def _on_text(self, obj, text):
+        self.label.text = text
+
+    def _on_font_size(self, obj, size):
+        self.label.font_size = size
 
     def on_release(self):
         pass

@@ -54,6 +54,14 @@ if __name__ == '__main__':
     SimplePlayerApp().run()
 ```
 
+# Tests
+
+Testing FFmpeg wrapper:
+
+```kivy tests/test_ffmpeg_cli.py```
+
+
+
 # License
 
 DesktopVideoPlayer is licensed under MIT license.

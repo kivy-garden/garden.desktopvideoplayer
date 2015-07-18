@@ -23,6 +23,7 @@
                 pos: self.pos
                 size: self.size
 
+
 <ContextMenuItem>:
     size_hint: None, None
     submenu_arrow: _submenu_arrow
@@ -60,14 +61,17 @@
 
 <ContextMenuTextItem>:
     label: _label
-    size: self.parent.width, 26
-    on_text: self.label.text = self.text
+    width: self.parent.width if self.parent else 0
+    on_parent: print('parent')
+    height: 26
+#    on_height: print(self.height)
+#    on_text: self.label.text = self.text
 
     Label:
         pos: 0,0
         id: _label
         padding: 10, 0
-        font_size: '14px'
+#        font_size:
         halign: 'left'
         valign: 'middle'
         size: self.texture_size
@@ -76,15 +80,18 @@
 
 <ContextMenuButton@Button>:
     size_hint: None, None
+    font_size: 12
+    height: 20
     background_normal: ""
     background_down: ""
     background_color: 0.2, 0.71, 0.9, 1.0
+    border: (0, 0, 0, 0)
     on_press: self.background_color = 0.10, 0.6, 0.8, 1.0
     on_release: self.background_color = 0.2, 0.71, 0.9, 1.0
 
 <ContextMenuTextInput@TextInput>:
     size_hint: None, None
-    height: 20
+    height: 22
     font_size: 12
-    padding: 7, 2
+    padding: 7, 3
     multiline: False

@@ -7,9 +7,10 @@
     _volume_btn: volume_btn
     # strong reference
     # http://kivy.org/docs/guide/lang.html#referencing-widgets
-    context_menu: context_menu.__self__
+    context_menu: _context_menu.__self__
     _notify_bubble: notify_bubble.__self__
     _info_box: _info_box.__self__
+    _advanced_options: _advanced_options
 
     on_parent: not self._initialized and root._init()
 
@@ -137,7 +138,7 @@
         on_size: self.pos = (self.parent.width / 2 - self.width / 2, self.parent.height - self.height * 2) if self.parent else (0,0)
 
     ContextMenu:
-        id: context_menu
+        id: _context_menu
         ContextMenuTextItem:
             text: "Jump to"
 #            on_release: root._context_item_release(args[0])
@@ -160,8 +161,16 @@
                     text: "Save to the same dir as the video"
                     on_release: root.save_screenshot_to_the_same_dir()
                 TakeScreenshotSaveTo:
-                    text: "Save to"
-#                    on_release: root.save_screenshot_to_the_same_dir()
+                    text: "Save to:"
+                    on_save_released: root.save_screenshot_to_dir(args[1])
+                ContextMenuTextItem:
+                    text: "Advanced options"
+                    font_size: '10px'
+                    height: 18
+                ContextMenuTextItem:
+                    id: _advanced_options
+                    text: "Item 1"
+                    height: 40
 
 
 #                ContextMenuTextItem:
@@ -186,9 +195,17 @@
 #                    text: "SubMenu #4"
 
 <TakeScreenshotSaveTo>:
+#    text_input: _text_input
     ContextMenuTextInput:
-        width: 50
-        pos: self.parent.label.width, 3
+        id: _text_input
+        width: self.parent.width - self.parent.label.width - _go_btn.width - 4
+        pos: self.parent.label.width - 4, 2
+    ContextMenuButton:
+        id: _go_btn
+        text: "GO"
+        width: 27
+        pos: _text_input.right + 4, 3
+        on_release: root.dispatch('on_save_released', _text_input.text)
 
 
 <JumpToMenuTextInput@ContextMenuTextInput>:
@@ -201,13 +218,13 @@
     size: 145, 52
 
     StackLayout:
-        canvas.before:
-            Color:
-                rgb: (0.15, 0.15, 0.15)
-            Rectangle:
-                pos: self.pos
-                size: self.size
-        padding: 4
+#        canvas.before:
+#            Color:
+#                rgb: (0.15, 0.15, 0.15)
+#            Rectangle:
+#                pos: self.pos
+#                size: self.size
+        padding: 3
         spacing: 3
 
         JumpToMenuTextInput:
@@ -230,9 +247,7 @@
         ContextMenuButton:
             id: _jump_btn
             text: "GO"
-            font_size: 12
             width: 27
-            height: 20
             on_release: root._dispatch_jump_event(_hours_input.text, _minutes_input.text, _seconds_input.text)
         Label:
             text: "use format HH:MM:SS"

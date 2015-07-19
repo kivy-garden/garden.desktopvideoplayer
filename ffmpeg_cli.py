@@ -43,7 +43,13 @@ class FFmpegCLI:
             dest
         ], callback)
 
-    def get_info(self, file, callback):
+    def get_info(self, file, callback, trim_ffprobe_info=True):
+        def _trim_response(code, out, err):
+            if trim_ffprobe_info:
+                pass
+                # err.replace('.*Input #\d+', '')
+            callback(code, out, err)
+
         self._run_in_thread(self._run_cmd, [self.ffprobe_bin,
             '-i', file,
-        ], callback)
+        ], _trim_response)

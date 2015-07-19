@@ -29,6 +29,12 @@
     submenu_arrow: _submenu_arrow
     on_children: self._update_arrows()
     on_parent: self._update_arrows()
+    canvas.before:
+        Color:
+            rgb: (0.15, 0.15, 0.15)
+        Rectangle:
+            pos: 0,0
+            size: self.size
 
     Widget:
         id: _submenu_arrow
@@ -49,23 +55,10 @@
                 xy: (-self.pos[0], -self.pos[1])
 
 
-<ContextMenuHoverableItem>:
-    on_hovered: self._on_hovered(args[1])
-    canvas.before:
-        Color:
-            rgb: (0.25, 0.25, 0.25) if self.hovered and not self.disabled else (0.15, 0.15, 0.15)
-        Rectangle:
-            pos: 0,0
-            size: self.size
-
-
-<ContextMenuTextItem>:
+<ContextMenuText>:
     label: _label
     width: self.parent.width if self.parent else 0
-    on_parent: print('parent')
     height: 26
-#    on_height: print(self.height)
-#    on_text: self.label.text = self.text
 
     Label:
         pos: 0,0
@@ -76,6 +69,27 @@
         valign: 'middle'
         size: self.texture_size
         size_hint: None, 1
+
+
+<ContextMenuHoverableItem>:
+    on_hovered: self._on_hovered(args[1])
+    canvas.before:
+        Color:
+            rgb: (0.25, 0.25, 0.25) if self.hovered and not self.disabled else (0.15, 0.15, 0.15)
+        Rectangle:
+            pos: 0,0
+            size: self.size
+
+
+<ContextMenuDivider>:
+    font_size: '10dp'
+    height: 20
+    canvas.before:
+        Color:
+            rgb: (0.25, 0.25, 0.25)
+        Rectangle:
+            pos: 0,self.height - 1
+            size: self.width, 1
 
 
 <ContextMenuButton@Button>:
@@ -89,9 +103,27 @@
     on_press: self.background_color = 0.10, 0.6, 0.8, 1.0
     on_release: self.background_color = 0.2, 0.71, 0.9, 1.0
 
+<ContextMenuToggleButton@ToggleButton>:
+    size_hint: None, None
+    font_size: '12px'
+    size: 30, 20
+    background_normal: ""
+    background_down: ""
+    background_color: (0.2, 0.71, 0.9, 1.0) if self.state == 'down' else (0.25, 0.25, 0.25, 1.0)
+    border: (0, 0, 0, 0)
+    on_press: self.background_color = 0.10, 0.6, 0.8, 1.0
+    on_release: self.background_color = 0.2, 0.71, 0.9, 1.0
+
+
+<ContextMenuSmallLabel@Label>:
+    size: self.texture_size[0], 18
+    size_hint: None, None
+    font_size: '12dp'
+
+
 <ContextMenuTextInput@TextInput>:
     size_hint: None, None
     height: 22
-    font_size: 12
+    font_size: '12dp'
     padding: 7, 3
     multiline: False

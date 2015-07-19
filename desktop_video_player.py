@@ -25,8 +25,12 @@ class DesktopVideoPlayer(RelativeLayout):
     _volume_slider = kp.ObjectProperty(None)
     _volume_btn = kp.ObjectProperty(None)
     _info_box = kp.ObjectProperty(None)
+
+    _show_info_menu_option = kp.ObjectProperty(None)
+    _take_screenshot_menu_option = kp.ObjectProperty(None)
+
     context_menu = kp.ObjectProperty(None)
-    _advanced_options = kp.ObjectProperty(None)
+    # _advanced_options = kp.ObjectProperty(None)
 
     remaining_label = kp.ObjectProperty(None)
     play_btn = kp.ObjectProperty(None)
@@ -80,16 +84,16 @@ class DesktopVideoPlayer(RelativeLayout):
         self.remove_widget(self._notify_bubble)
         self.remove_widget(self._info_box)
 
-        self._advanced_options_parent = self._advanced_options.parent
-        self._advanced_options.parent.remove_widget(self._advanced_options)
+        # self._advanced_options_parent = self._advanced_options.parent
+        # self._advanced_options.parent.remove_widget(self._advanced_options)
 
         self._ffmpeg = FFmpegCLI()
         self._ffmpeg.is_available(lambda result: self._toggle_video_menu_options(result))
         self._initialized = True
 
-    def _toggle_video_menu_options(self, disabled):
-        for widget in self.context_menu.menu_item_widgets:
-            widget.disabled = not disabled
+    def _toggle_video_menu_options(self, available):
+        self._show_info_menu_option.disabled = not available
+        self._take_screenshot_menu_option.disabled = not available
 
     @property
     def context_menu_visible(self):
@@ -280,15 +284,28 @@ class DesktopVideoPlayer(RelativeLayout):
 
     def take_screenshot(self, position, dest_dir):
         time_str = self.sec_to_time_str(round(position, 3), force_decimals=True, force_hours=True)
-        dest_file = os.path.join(dest_dir, os.path.splitext(os.path.basename(self.source))[0] + '-' + time_str.replace(':', '-') + '.jpg')
-        Logger.info('Saving screenshot from %s to "%s"', time_str, dest_file)
+        frames = self._advanced_options.get_frames()
+        format = self._advanced_options.get_selected_format()
+        dest_file = os.path.join(dest_dir, os.path.splitext(os.path.basename(self.source))[0] + '-' + time_str.replace(':', '-'))
+        counter_format = None
 
-        self.show_notify_bubble('Taking screenshot ...')
+        if frames > 1:
+            counter_format = '%0' + str(int(frames / 10.0) + 1) + 'd'
+            dest_file += '_' + counter_format
+        dest_file += '.' + format
+
+        Logger.info('Saving screenshot from %s (%d frames) to "%s"', time_str, frames,  dest_file)
+
+        self.show_notify_bubble('Taking screenshot' + ('s' if frames > 1 else '') + ' ...')
 
         def _show_notify(code, out, err):
-            self.show_notify_bubble('Saved to {path}'.format(path=dest_file), 5)
+            if counter_format:
+                human_file_name = dest_file.replace(counter_format, '[0-' + str(frames - 1) + ']')
+            else:
+                human_file_name = dest_file
+            self.show_notify_bubble('Saved to {path}'.format(path=human_file_name), 5)
 
-        self._ffmpeg.take_screenshot(self.source, self._video.position, dest_file, _show_notify)
+        self._ffmpeg.take_screenshot(self.source, self._video.position, dest_file, _show_notify, frames=frames)
         self.context_menu.visible = False
 
     # def save_screenshot_to_desktop(self):
@@ -331,7 +348,7 @@ class DesktopVideoPlayer(RelativeLayout):
         anim.start(self._info_box)
 
 
-class JumpToMenu(RelativeLayout, ContextMenuHoverableItem):
+class JumpToMenu(ContextMenuHoverableItem):
 
     def __init__(self, *args, **kwargs):
         super(JumpToMenu, self).__init__(*args, **kwargs)
@@ -350,7 +367,7 @@ class JumpToMenu(RelativeLayout, ContextMenuHoverableItem):
     def _dispatch_jump_event(self, hours, minutes, seconds):
         def _str_to_int(s):
             try:
-                return int(s)
+                return int(s.strip())
             except ValueError:
                 return 0
 
@@ -369,6 +386,26 @@ class TakeScreenshotSaveTo(ContextMenuTextItem):
         pass
 
 
+class AdvancedOptions(ContextMenuItem):
+    _format_png_btn = kp.ObjectProperty(None)
+    _format_jpg_btn = kp.ObjectProperty(None)
+    _frames_input = kp.ObjectProperty(None)
+
+    def on_touch_down(self, click_event):
+        super(AdvancedOptions, self).on_touch_down(click_event)
+        return self.collide_point(click_event.x, click_event.y)
+
+    def get_selected_format(self):
+        if self._format_png_btn.state == 'down':
+            return 'png'
+        elif self._format_jpg_btn.state == 'down':
+            return 'jpg'
+
+    def get_frames(self):
+        try:
+            return int(self._frames_input.text.strip())
+        except:
+            return 1
 
 # class CustomVideoPlayerProgressBar(VideoPlayerProgressBar):
 #     def _update_bubble(self, *l):

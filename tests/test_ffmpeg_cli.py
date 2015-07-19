@@ -32,9 +32,20 @@ class FFmpegCLITestCase(unittest.TestCase):
     def test_ffprobe_get_info(self):
         def _assert_get_info(code, out, err):
             self.assertTrue(code == 0)
-            print(out)
+            self.assertEqual(err.index('ffprobe version'), 0)
+            # print(out)
 
-        self.cli.get_info(self.test_video1_path, _assert_get_info)
+        self.cli.get_info(self.test_video1_path, _assert_get_info, trim_ffprobe_info=False)
+
+        def _assert_get_info_trimmed(code, out, err):
+            self.assertTrue(code == 0)
+            self.assertFalse('ffprobe version' in err)
+            # print(out)
+
+        self.cli.get_info(self.test_video1_path, _assert_get_info_trimmed)
+
+
+
 
 
 if __name__ == "__main__":

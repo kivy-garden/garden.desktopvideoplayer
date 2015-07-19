@@ -12,6 +12,9 @@
     _info_box: _info_box.__self__
     _advanced_options: _advanced_options
 
+    _show_info_menu_option: _show_info_menu_option
+    _take_screenshot_menu_option: _take_screenshot_menu_option
+
     on_parent: not self._initialized and root._init()
 
     Video:
@@ -146,31 +149,29 @@
                 JumpToMenu:
                     on_jump_button_released: root.jump_to(args[1], args[2], args[3])
         ContextMenuTextItem:
+            id: _show_info_menu_option
             text: "Show info"
             on_release: root.show_info()
         ContextMenuTextItem:
+            id: _take_screenshot_menu_option
             text: "Take screenshot"
             ContextMenu:
 #                ContextMenuTextItem:
 #                    text: "Save to desktop"
 #                    on_release: root.save_screenshot_to_desktop()
                 ContextMenuTextItem:
-                    text: "Save to my home dir"
+                    text: "To my home dir"
                     on_release: root.save_screenshot_to_home_dir()
                 ContextMenuTextItem:
-                    text: "Save to the same dir as the video"
+                    text: "To the same dir as the video"
                     on_release: root.save_screenshot_to_the_same_dir()
                 TakeScreenshotSaveTo:
-                    text: "Save to:"
+                    text: "To:"
                     on_save_released: root.save_screenshot_to_dir(args[1])
-                ContextMenuTextItem:
+                ContextMenuDivider:
                     text: "Advanced options"
-                    font_size: '10px'
-                    height: 18
-                ContextMenuTextItem:
+                AdvancedOptions:
                     id: _advanced_options
-                    text: "Item 1"
-                    height: 40
 
 
 #                ContextMenuTextItem:
@@ -206,6 +207,38 @@
         width: 27
         pos: _text_input.right + 4, 3
         on_release: root.dispatch('on_save_released', _text_input.text)
+
+<AdvancedOptions>:
+    id: _advanced_options
+    height: 30
+    _format_png_btn: _format_png_btn
+    _format_jpg_btn: _format_jpg_btn
+    _frames_input: _frames_input
+
+    ContextMenuSmallLabel:
+        id: _frame_label
+        text: "Frames:"
+        pos: 10, self.parent.height - self.height - 1
+    ContextMenuTextInput:
+        id: _frames_input
+        pos: _frame_label.right + 5, self.parent.height - self.height
+        text: "1"
+        width: 30
+    ContextMenuSmallLabel:
+        id: _format_label
+        text: "Format:"
+        pos: _frames_input.right + 15, self.parent.height - self.height - 1
+    ContextMenuToggleButton:
+        id: _format_png_btn
+        text: "PNG"
+        pos: _format_label.right + 5, self.parent.height - self.height
+        group: "format"
+        state: "down"
+    ContextMenuToggleButton:
+        id: _format_jpg_btn
+        text: "JPG"
+        pos: _format_png_btn.right, self.parent.height - self.height
+        group: "format"
 
 
 <JumpToMenuTextInput@ContextMenuTextInput>:

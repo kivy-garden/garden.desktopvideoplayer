@@ -1,6 +1,7 @@
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.relativelayout import RelativeLayout
+from kivy.uix.widget import Widget
 from kivy.core.window import Window
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.lang import Builder
@@ -157,7 +158,7 @@ class ContextMenu(GridLayout):
         return [w for w in self.children if issubclass(w.__class__, ContextMenuItem)]
 
 
-class ContextMenuItem(object):
+class ContextMenuItem(RelativeLayout):
     submenu_arrow = kp.ObjectProperty(None)
     submenu = kp.ObjectProperty(None)
 
@@ -204,6 +205,10 @@ class ContextMenuItem(object):
     def _root_parent(self):
         return self.parent.get_context_menu_root_parent()
 
+    # def on_touch_down(self, click_event):
+    #     super(ContextMenuItem, self).on_touch_down(click_event)
+    #     return self.collide_point(click_event.x, click_event.y)
+
 
 class ContextMenuHoverableItem(ContextMenuItem):
     hovered = kp.BooleanProperty(False)
@@ -216,13 +221,13 @@ class ContextMenuHoverableItem(ContextMenuItem):
             self.hide_submenu()
 
 
-class ContextMenuTextItem(ButtonBehavior, RelativeLayout, ContextMenuHoverableItem):
+class ContextMenuText(ContextMenuItem):
     submenu_postfix = kp.StringProperty(' ...')
     text = kp.StringProperty('')
     font_size = kp.NumericProperty('14pd')
 
     def __init__(self, *args, **kwargs):
-        super(ContextMenuTextItem, self).__init__(*args, **kwargs)
+        super(ContextMenuText, self).__init__(*args, **kwargs)
         self.bind(text=self._on_text)
         self.bind(font_size=self._on_font_size)
         # if text:
@@ -238,13 +243,19 @@ class ContextMenuTextItem(ButtonBehavior, RelativeLayout, ContextMenuHoverableIt
     def _on_font_size(self, obj, size):
         self.label.font_size = size
 
-    def on_release(self):
-        pass
-
     @property
     def content_width(self):
         # keep little space for eventual arrow for submenus
         return self.label.texture_size[0] + 10
+
+
+class ContextMenuDivider(ContextMenuText):
+    def on_touch_down(self, click_event):
+        return self.collide_point(click_event.x, click_event.y)
+
+
+class ContextMenuTextItem(ButtonBehavior, ContextMenuText, ContextMenuHoverableItem):
+    pass
 
 
 _path = os.path.dirname(os.path.realpath(__file__))

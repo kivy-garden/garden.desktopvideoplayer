@@ -83,7 +83,7 @@
 
 <ContextMenuDivider>:
     font_size: '10dp'
-    height: 20
+    height: 20 if len(self.label.text) > 0 else 1
     canvas.before:
         Color:
             rgb: (0.25, 0.25, 0.25)

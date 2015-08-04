@@ -1,6 +1,8 @@
 from subprocess import Popen, PIPE, STDOUT
 import os
 import threading
+import re
+from kivy.logger import Logger
 
 
 class FFmpegCLI:
@@ -46,8 +48,11 @@ class FFmpegCLI:
     def get_info(self, file, callback, trim_ffprobe_info=True):
         def _trim_response(code, out, err):
             if trim_ffprobe_info:
-                pass
-                # err.replace('.*Input #\d+', '')
+                # Match everything after ffrobe verison info
+                err = re.match(r"ffprobe (.|\n)+(Input(.|\n)*)", err, re.MULTILINE).group(2)
+            # Logger.info(code)
+            # Logger.info(out)
+            # Logger.info(err)
             callback(code, out, err)
 
         self._run_in_thread(self._run_cmd, [self.ffprobe_bin,

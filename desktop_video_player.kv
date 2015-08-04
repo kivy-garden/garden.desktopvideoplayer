@@ -148,6 +148,7 @@
             ContextMenu:
                 JumpToMenu:
                     on_jump_button_released: root.jump_to(args[1], args[2], args[3])
+        ContextMenuDivider:
         ContextMenuTextItem:
             id: _show_info_menu_option
             text: "Show info"
@@ -156,9 +157,6 @@
             id: _take_screenshot_menu_option
             text: "Take screenshot"
             ContextMenu:
-#                ContextMenuTextItem:
-#                    text: "Save to desktop"
-#                    on_release: root.save_screenshot_to_desktop()
                 ContextMenuTextItem:
                     text: "To my home dir"
                     on_release: root.save_screenshot_to_home_dir()
@@ -172,6 +170,19 @@
                     text: "Advanced options"
                 AdvancedOptions:
                     id: _advanced_options
+        ContextMenuTextItem:
+            id: _take_screenshot_menu_option
+            text: "Grid preview"
+            ContextMenu:
+                ContextMenuTextItem:
+                    text: "To my home dir"
+#                    on_release: root.save_screenshot_to_home_dir()
+                ContextMenuTextItem:
+                    text: "To the same dir as the video"
+#                    on_release: root.save_screenshot_to_the_same_dir()
+                TakeScreenshotSaveTo:
+                    text: "To:"
+#                    on_save_released: root.save_screenshot_to_dir(args[1])
 
 
 #                ContextMenuTextItem:

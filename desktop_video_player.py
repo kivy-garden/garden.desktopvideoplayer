@@ -323,9 +323,12 @@ class DesktopVideoPlayer(RelativeLayout):
         self.take_screenshot(self._video.position, dir)
 
     def show_info(self):
+        print(self._ffmpeg)
+
         def _show_info(code, out, err):
             self.show_info_box(err)
-        self._ffmpeg.get_info(self.source, _show_info)
+
+        self._ffmpeg.get_info(self.source, _show_info, True)
         self.context_menu.visible = False
 
     def hide_info_box(self):

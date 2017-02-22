@@ -6,12 +6,12 @@
     on_visible: self._on_visible(args[1])
     on_parent: self._on_visible(self.visible)
 
-#    canvas.before:
-#        Color:
-#            rgb: 1.0, 0, 0
-#        Rectangle:
-#            pos: self.pos
-#            size: self.size
+    # canvas.before:
+    #     Color:
+    #         rgb: 1.0, 0, 0
+    #     Rectangle:
+    #         pos: self.pos
+    #         size: self.size
     Widget:
         id: _spacer
         size_hint: 1, None
@@ -41,9 +41,9 @@
         size_hint: None, None
         width: 6
         height: 11
-#        pos: 10, 10
+        # pos: 10, 10
         pos: self.parent.width - self.width - 5, (self.parent.height - self.height) / 2
-#        on_pos: print(self.pos)
+        # on_pos: print(self.pos)
         canvas.before:
             Translate:
                 xy: self.pos
@@ -64,7 +64,7 @@
         pos: 0,0
         id: _label
         padding: 10, 0
-#        font_size:
+        # font_size:
         halign: 'left'
         valign: 'middle'
         size: self.texture_size

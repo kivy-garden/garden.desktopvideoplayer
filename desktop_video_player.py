@@ -1,62 +1,57 @@
-import kivy
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.relativelayout import FloatLayout
-# from kivy.uix.label import Label
-from kivy.logger import Logger
-from kivy.animation import Animation
-from kivy.core.window import Window
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.lang import Builder
-from kivy.clock import Clock
-from functools import partial
-from ffmpeg_cli import FFmpegCLI
-from context_menu import ContextMenuItem, ContextMenuTextItem, ContextMenuHoverableItem
-import kivy.properties as kp
 import os
+from functools import partial
 
+from kivy.properties import ObjectProperty, StringProperty, NumericProperty, BooleanProperty
+from kivy.animation import Animation
+from kivy.clock import Clock
+from kivy.core.window import Window
+from kivy.lang import Builder
+from kivy.logger import Logger
+from kivy.uix.relativelayout import RelativeLayout
+
+from context_menu import ContextMenuItem, ContextMenuTextItem, ContextMenuHoverableItem
+from ffmpeg_cli import FFmpegCLI
 
 _path = os.path.dirname(os.path.realpath(__file__))
 
 
 class DesktopVideoPlayer(RelativeLayout):
 
-    _video = kp.ObjectProperty(None)
-    _notify_bubble = kp.ObjectProperty(None)
-    _volume_slider = kp.ObjectProperty(None)
-    _volume_btn = kp.ObjectProperty(None)
-    _info_box = kp.ObjectProperty(None)
+    _video = ObjectProperty(None)
+    _notify_bubble = ObjectProperty(None)
+    _volume_slider = ObjectProperty(None)
+    _volume_btn = ObjectProperty(None)
+    _info_box = ObjectProperty(None)
 
-    _show_info_menu_option = kp.ObjectProperty(None)
-    _take_screenshot_menu_option = kp.ObjectProperty(None)
+    _show_info_menu_option = ObjectProperty(None)
+    _take_screenshot_menu_option = ObjectProperty(None)
 
-    context_menu = kp.ObjectProperty(None)
+    context_menu = ObjectProperty(None)
     # _advanced_options = kp.ObjectProperty(None)
 
-    remaining_label = kp.ObjectProperty(None)
-    play_btn = kp.ObjectProperty(None)
-    bottom_layout = kp.ObjectProperty(None)
+    remaining_label = ObjectProperty(None)
+    play_btn = ObjectProperty(None)
+    bottom_layout = ObjectProperty(None)
 
     # path = kp.StringProperty(_path)
-    current_play_btn_image = kp.StringProperty('')
-    current_volume_btn_image = kp.StringProperty('')
+    current_play_btn_image = StringProperty('')
+    current_volume_btn_image = StringProperty('')
 
-    source = kp.StringProperty('')
-    volume = kp.NumericProperty(1.0)
+    source = StringProperty('')
+    volume = NumericProperty(1.0)
 
-    mouse_hover = kp.BooleanProperty(False)
-    auto_play = kp.BooleanProperty(True)
-    show_elapsed_time = kp.BooleanProperty(True)
-    volume_muted = kp.BooleanProperty(False)
-    check_mouse_hover = kp.BooleanProperty(False)
+    mouse_hover = BooleanProperty(False)
+    auto_play = BooleanProperty(True)
+    show_elapsed_time = BooleanProperty(True)
+    volume_muted = BooleanProperty(False)
+    check_mouse_hover = BooleanProperty(False)
 
-    _initialized = kp.BooleanProperty(False)
-
-
+    _initialized = BooleanProperty(False)
 
     # last_file_selected = StringProperty('')
 
-    def __init__(self, *args, **kwargs):
-        super(DesktopVideoPlayer, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(DesktopVideoPlayer, self).__init__(**kwargs)
 
         # self.register_event_type('on_context_menu_show')
         # self.register_event_type('on_context_menu_hide')
@@ -70,7 +65,6 @@ class DesktopVideoPlayer(RelativeLayout):
 
         self.check_mouse_hover = True
         Window.bind(on_key_down=self._on_key_down)
-
 
         # self.video.bind(duration=self.setter('duration'),
         #                 position=self.setter('position'),
@@ -157,7 +151,8 @@ class DesktopVideoPlayer(RelativeLayout):
         minutes = int((sec - (hours * 3600)) / 60)
         seconds = int(sec - hours * 3600 - minutes * 60)
 
-        time_str = '%02d:%02d:%02d' % (hours, minutes, seconds) if force_hours or hours > 0 else '%02d:%02d' % (minutes, seconds)
+        time_str = '%02d:%02d:%02d' % (hours, minutes, seconds) if force_hours or hours > 0 else \
+            '%02d:%02d' % (minutes, seconds)
         if force_decimals:
             time_str += str(sec - int(sec))[1:]
 
@@ -183,7 +178,6 @@ class DesktopVideoPlayer(RelativeLayout):
 
     def _check_mouse_hover(self, *args):
         widget_pos = self.to_window(0, 0)
-        mouse_pos = Window.mouse_pos
         # p = self.to_local(*Window.mouse_pos)
         # print(p, self.pos, self.to_local(*p), self.to_window(*p))
         # print(self.to_window(*p))
@@ -285,27 +279,28 @@ class DesktopVideoPlayer(RelativeLayout):
     def take_screenshot(self, position, dest_dir):
         time_str = self.sec_to_time_str(round(position, 3), force_decimals=True, force_hours=True)
         frames = self._advanced_options.get_frames()
-        format = self._advanced_options.get_selected_format()
-        dest_file = os.path.join(dest_dir, os.path.splitext(os.path.basename(self.source))[0] + '-' + time_str.replace(':', '-'))
+        file_format = self._advanced_options.get_selected_format()
+        destination_file = os.path.join(dest_dir, os.path.splitext(os.path.basename(self.source))[0] + '-' +
+                                 time_str.replace(':', '-'))
         counter_format = None
 
         if frames > 1:
             counter_format = '%0' + str(int(frames / 10.0) + 1) + 'd'
-            dest_file += '_' + counter_format
-        dest_file += '.' + format
+            destination_file += '_' + counter_format
+        destination_file += '.' + file_format
 
-        Logger.info('Saving screenshot from %s (%d frames) to "%s"', time_str, frames,  dest_file)
+        Logger.info('Saving screenshot from %s (%d frames) to "%s"', time_str, frames,  destination_file)
 
         self.show_notify_bubble('Taking screenshot' + ('s' if frames > 1 else '') + ' ...')
 
         def _show_notify(code, out, err):
             if counter_format:
-                human_file_name = dest_file.replace(counter_format, '[0-' + str(frames - 1) + ']')
+                human_file_name = destination_file.replace(counter_format, '[0-' + str(frames - 1) + ']')
             else:
-                human_file_name = dest_file
+                human_file_name = destination_file
             self.show_notify_bubble('Saved to {path}'.format(path=human_file_name), 5)
 
-        self._ffmpeg.take_screenshot(self.source, self._video.position, dest_file, _show_notify, frames=frames)
+        self._ffmpeg.take_screenshot(self.source, self._video.position, destination_file, _show_notify, frames=frames)
         self.context_menu.visible = False
 
     # def save_screenshot_to_desktop(self):
@@ -381,8 +376,8 @@ class JumpToMenu(ContextMenuHoverableItem):
 
 
 class TakeScreenshotSaveTo(ContextMenuTextItem):
-    def __init__(self, *args, **kwargs):
-        super(TakeScreenshotSaveTo, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(TakeScreenshotSaveTo, self).__init__(**kwargs)
         self.register_event_type('on_save_released')
 
     def on_save_released(self, text):
@@ -390,9 +385,9 @@ class TakeScreenshotSaveTo(ContextMenuTextItem):
 
 
 class AdvancedOptions(ContextMenuItem):
-    _format_png_btn = kp.ObjectProperty(None)
-    _format_jpg_btn = kp.ObjectProperty(None)
-    _frames_input = kp.ObjectProperty(None)
+    _format_png_btn = ObjectProperty(None)
+    _format_jpg_btn = ObjectProperty(None)
+    _frames_input = ObjectProperty(None)
 
     def on_touch_down(self, click_event):
         super(AdvancedOptions, self).on_touch_down(click_event)

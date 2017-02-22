@@ -1,25 +1,23 @@
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.widget import Widget
-from kivy.core.window import Window
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.lang import Builder
-from kivy.clock import Clock
-from functools import partial
-import kivy.properties as kp
 import os
+from functools import partial
 
+from kivy.properties import NumericProperty, BooleanProperty, ObjectProperty, StringProperty
+from kivy.clock import Clock
+from kivy.core.window import Window
+from kivy.lang import Builder
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.relativelayout import RelativeLayout
 
 
 class ContextMenu(GridLayout):
 
-    visible = kp.BooleanProperty(False)
-    spacer = kp.ObjectProperty(None)
-    root_parent = kp.ObjectProperty(None)
+    visible = BooleanProperty(False)
+    spacer = ObjectProperty(None)
+    root_parent = ObjectProperty(None)
 
-    def __init__(self, *args, **kwargs):
-        super(ContextMenu, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(ContextMenu, self).__init__(**kwargs)
         self.clock_event = None
         self.orig_parent = None
         self._on_visible(False)
@@ -75,7 +73,6 @@ class ContextMenu(GridLayout):
             return self.root_parent
         root_context_menu = self._get_root_context_menu()
         return root_context_menu.root_parent if root_context_menu.root_parent else root_context_menu.parent
-
 
     def _get_root_context_menu(self):
         root = self
@@ -159,11 +156,11 @@ class ContextMenu(GridLayout):
 
 
 class ContextMenuItem(RelativeLayout):
-    submenu_arrow = kp.ObjectProperty(None)
-    submenu = kp.ObjectProperty(None)
+    submenu_arrow = ObjectProperty(None)
+    submenu = ObjectProperty(None)
 
     def __init__(self, *args, **kwargs):
-        super(ContextMenuItem, self).__init__(*args, **kwargs)
+        super(ContextMenuItem, self).__init__(**kwargs)
 
     def get_submenu(self):
         return self.submenu if self.submenu != "" else None
@@ -211,7 +208,7 @@ class ContextMenuItem(RelativeLayout):
 
 
 class ContextMenuHoverableItem(ContextMenuItem):
-    hovered = kp.BooleanProperty(False)
+    hovered = BooleanProperty(False)
 
     def _on_hovered(self, new_hovered):
         if new_hovered:
@@ -222,9 +219,9 @@ class ContextMenuHoverableItem(ContextMenuItem):
 
 
 class ContextMenuText(ContextMenuItem):
-    submenu_postfix = kp.StringProperty(' ...')
-    text = kp.StringProperty('')
-    font_size = kp.NumericProperty('14pd')
+    submenu_postfix = StringProperty(' ...')
+    text = StringProperty('')
+    font_size = NumericProperty('14pd')
 
     def __init__(self, *args, **kwargs):
         super(ContextMenuText, self).__init__(*args, **kwargs)

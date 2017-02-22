@@ -26,8 +26,8 @@
         on_position: root._update_progress(video.position)
         on_state: root._video_state_changed()
         on_touch_down: root._on_touch_down(*args)
-#        on_touch_down: root._on_touch_down(args[1])
-#        on_key_down: root.on_key_down(args[1])
+        # on_touch_down: root._on_touch_down(args[1])
+        # on_key_down: root.on_key_down(args[1])
 
     AnchorLayout:
         id: bottom_layout
@@ -38,7 +38,7 @@
         StackLayout:
             spacing: 10, 0
             padding: 10, 10, 10, 10
-#            background_color: [1, 0, 1, 0.5]
+            # background_color: [1, 0, 1, 0.5]
             canvas.before:
                 Color:
                     rgba: 0, 0, 0, 0.5
@@ -132,7 +132,7 @@
                 size: self.size
         text: "test"
         size_hint: None, None
-#        text_size: self.texture_size
+        # text_size: self.texture_size
         padding: 15, 6
         size: self.texture_size
         halign: 'center'
@@ -143,7 +143,7 @@
         id: _context_menu
         ContextMenuTextItem:
             text: "Jump to"
-#            on_release: root._context_item_release(args[0])
+            # on_release: root._context_item_release(args[0])
             ContextMenu:
                 JumpToMenu:
                     on_jump_button_released: root.jump_to(args[1], args[2], args[3])
@@ -175,15 +175,15 @@
             ContextMenu:
                 ContextMenuTextItem:
                     text: "To my home dir"
-#                    on_release: root.save_screenshot_to_home_dir()
+                    # on_release: root.save_screenshot_to_home_dir()
                 ContextMenuTextItem:
                     text: "To the same dir as the video"
-#                    on_release: root.save_screenshot_to_the_same_dir()
+                    # on_release: root.save_screenshot_to_the_same_dir()
                 TakeScreenshotSaveTo:
                     text: "To:"
 
 <TakeScreenshotSaveTo>:
-#    text_input: _text_input
+    # text_input: _text_input
     ContextMenuTextInput:
         id: _text_input
         width: self.parent.width - self.parent.label.width - _go_btn.width - 4
@@ -198,6 +198,7 @@
 <AdvancedOptions>:
     id: _advanced_options
     height: 30
+    width: 225
     _format_png_btn: _format_png_btn
     _format_jpg_btn: _format_jpg_btn
     _frames_input: _frames_input
@@ -238,17 +239,17 @@
     size: 145, 52
 
     StackLayout:
-#        canvas.before:
-#            Color:
-#                rgb: (0.15, 0.15, 0.15)
-#            Rectangle:
-#                pos: self.pos
-#                size: self.size
+        # canvas.before:
+        #     Color:
+        #         rgb: (0.15, 0.15, 0.15)
+        #     Rectangle:
+        #         pos: self.pos
+        #         size: self.size
         padding: 3
         spacing: 3
 
         JumpToMenuTextInput:
-    #        on_touch_down: print(args[1])
+            # on_touch_down: print(args[1])
             id: _hours_input
         Label:
             text: ":"

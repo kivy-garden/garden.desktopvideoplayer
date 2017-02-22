@@ -1,12 +1,9 @@
-from subprocess import Popen, PIPE, STDOUT
-import os
-import threading
 import re
-from kivy.logger import Logger
+import threading
+from subprocess import Popen, PIPE
 
 
 class FFmpegCLI:
-
     def __init__(self, ffmpeg_bin='ffmpeg', ffprobe_bin='ffprobe'):
         self.ffmpeg_bin = ffmpeg_bin
         self.ffprobe_bin = ffprobe_bin
@@ -18,7 +15,7 @@ class FFmpegCLI:
     def _run_cmd(self, proc_args, callback):
         try:
             proc = Popen(proc_args, stdout=PIPE, stderr=PIPE)
-        except OSError as e:
+        except OSError:
             callback(None, None, None)
             return
 
@@ -27,23 +24,23 @@ class FFmpegCLI:
 
         if callback:
             callback(proc.returncode, stdout, strerr)
-        # outbuff.close()
+            # outbuff.close()
 
     def is_available(self, callback):
-        self.version(lambda code,out,err: callback(code == 0))
+        self.version(lambda code, out, err: callback(code == 0))
 
     def version(self, callback):
         self._run_in_thread(self._run_cmd, [self.ffmpeg_bin, '-version'], callback)
 
     def take_screenshot(self, file, seconds, dest, callback=None, frames=1, quality=1):
         self._run_in_thread(self._run_cmd, [self.ffmpeg_bin,
-            '-ss', str(seconds),
-            '-i', file,
-            '-y',
-            '-qscale:v', str(quality),
-            '-vframes', str(frames),
-            dest
-        ], callback)
+                                            '-ss', str(seconds),
+                                            '-i', file,
+                                            '-y',
+                                            '-qscale:v', str(quality),
+                                            '-vframes', str(frames),
+                                            dest
+                                            ], callback)
 
     def get_info(self, file, callback, trim_ffprobe_info=True):
         def _trim_response(code, out, err):
@@ -56,5 +53,5 @@ class FFmpegCLI:
             callback(code, out, err)
 
         self._run_in_thread(self._run_cmd, [self.ffprobe_bin,
-            '-i', file,
-        ], _trim_response)
+                                            '-i', file,
+                                            ], _trim_response)

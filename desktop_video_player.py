@@ -9,8 +9,8 @@ from kivy.lang import Builder
 from kivy.logger import Logger
 from kivy.uix.relativelayout import RelativeLayout
 
-from context_menu import ContextMenuItem, ContextMenuTextItem, ContextMenuHoverableItem
-from ffmpeg_cli import FFmpegCLI
+from .context_menu import ContextMenuItem, ContextMenuTextItem, ContextMenuHoverableItem
+from .ffmpeg_cli import FFmpegCLI
 
 _path = os.path.dirname(os.path.realpath(__file__))
 
